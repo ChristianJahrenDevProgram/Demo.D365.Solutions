@@ -10,7 +10,7 @@ jobs:
     environment: Dev
 
     steps:
-      - uses: actions/checkout@4.2.0
+      - uses: actions/checkout@4
 
       - name: Install Power Platform Tools
         uses: microsoft/powerplatform-actions/actions-install@v1
