@@ -22,5 +22,5 @@ jobs:
           app-id: ${{ secrets.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ secrets.TENANTID }}
-          solution-name: ALM basis
+          solution-name: 'ALM basis'
             
