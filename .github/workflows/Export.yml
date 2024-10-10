@@ -18,9 +18,9 @@ jobs:
       - name: Publish Solution
         uses: microsoft/powerplatform-actions/publish-solution@v1
         with:
-          environment-url: ${{ secrets.ENVIRONMENTURL }}
-          app-id: ${{ secrets.CLIENTIDALMDEV }}
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
-          tenant-id: ${{ secrets.TENANTID }}
-          solution-name: 'ALM basis'
+          tenant-id: ${{ vars.TENANTID }}
+          solution-name: ALMbasis
             
