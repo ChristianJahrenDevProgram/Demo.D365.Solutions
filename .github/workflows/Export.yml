@@ -1,4 +1,4 @@
-name: Export from Dev
+name: Export and create PR to develop
 
 on:
   workflow_dispatch:
@@ -7,33 +7,20 @@ on:
         description: 'Solution to export'
         required: true
         default: 'ALM basis'
-        type: choice
-        options:
-          - 'ALM basis'
-          - 'Kommer flere'
-      #Do Not change these values
-      solution_exported_folder:
-        description: 'folder name for staging the exported solution *do not change*'
+      solution_version:
+        description: 'Version of the solution'
         required: true
-        default: out/exported/
-      solution_folder:
-        description: 'staging the unpacked solution folder before check-in *do not change*'
-        required: true
-        default: out/solutions/
-      solution_target_folder:
-       description: 'folder name to be created and checked in *do not change*'
-       required: true
-       default: solutions/
+        default: '1.0.0.0'
 
-permissions:
-  contents: write
-  
 jobs:
-  export-from-dev:
+  export-and-create-pr:
     runs-on: windows-latest
     
     env:
       RUNNER_DEBUG: 1
+      SOLUTION_EXPORTED_FOLDER: out/exported/
+      SOLUTION_FOLDER: out/solutions/
+      SOLUTION_TARGET_FOLDER: solutions/
       
     steps:
       - uses: actions/checkout@v4
@@ -47,3 +34,52 @@ jobs:
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
+
+      - name: export-solution action
+        uses: microsoft/powerplatform-actions/export-solution@v0
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+          solution-name: ${{ github.event.inputs.solution_name }}
+          solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}.zip
+
+
+      - name: unpack-solution action
+        uses: microsoft/powerplatform-actions/unpack-solution@v0
+        with:
+          solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}.zip
+          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ github.event.inputs.solution_name }}
+          solution-type: 'Unmanaged'
+          overwrite-files: true
+
+      - name: create new branch
+        run: |
+          git fetch origin
+          git checkout -b feature/${{ github.event.inputs.solution_name }}
+          git push origin feature/${{ github.event.inputs.solution_name }}
+
+      - name: copy solution files to target folder
+        run: |
+          mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
+          cp -r ${{ env.SOLUTION_FOLDER }}/${{ github.event.inputs.solution_name }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
+
+      - name: commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
+          git commit -m "Exported and unpacked solution ${{ github.event.inputs.solution_name }} version ${{ github.event.inputs.solution_version }}"
+          git push origin feature/${{ github.event.inputs.solution_name }}
+
+
+      - name: create PR to develop
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: feature/${{ github.event.inputs.solution_name }}
+          base: develop
+          title: 'Exported and unpacked solution ${{ github.event.inputs.solution_name }}'
+          body: 'This PR includes the latest export of the solution ${{ github.event.inputs.solution_name }} from Power Platform.'
+          draft: false
