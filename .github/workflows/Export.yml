@@ -7,6 +7,7 @@ on:
         description: 'Solution to export'
         required: true
         default: 'ALM basis'
+        type: choice
         options:
           - 'ALM basis'
           - 'Kommer flere'
