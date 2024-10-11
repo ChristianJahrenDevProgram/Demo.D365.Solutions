@@ -16,10 +16,10 @@ on:
         type: 'choice'
         required: false
         options: 
-        - accces-task
-        - development-task
-        - bug
-      solution_description:
+        - 'accces-task'
+        - 'development-task'
+        - 'bug'
+      related_to_issue:
         description: 'Related to issue'
         required: false
         default: '#'
