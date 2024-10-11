@@ -6,35 +6,24 @@ on:
       solution_name:
         description: 'Solution to export'
         required: true
-        default: 'ALMDemo'
+        default: 'ALM basis'
       solution_version:
         description: 'Version of the solution'
         required: true
         default: '1.0.0.0'
 
-env:
-  RUNNER_DEBUG: 1
-  SOLUTION_EXPORTED_FOLDER: out/exported
-  SOLUTION_FOLDER: out/solutions
-  SOLUTION_TARGET_FOLDER: solutions
-
 jobs:
-  export-and-unpack:
+  export-and-create-pr:
     runs-on: windows-latest
+    
+    env:
+      RUNNER_DEBUG: 1
+      SOLUTION_EXPORTED_FOLDER: out/exported/
+      SOLUTION_FOLDER: out/solutions/
+      SOLUTION_TARGET_FOLDER: solutions/
       
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install Power Platform Tools
-        uses: microsoft/powerplatform-actions/actions-install@v1
-
-      - name: Publish Solution
-        uses: microsoft/powerplatform-actions/publish-solution@v1
-        with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
-          app-id: ${{ vars.CLIENTIDALMDEV }}
-          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
-          tenant-id: ${{ vars.TENANTID }}
 
       - name: export-solution action
         uses: microsoft/powerplatform-actions/export-solution@v1
@@ -46,6 +35,7 @@ jobs:
           solution-name: ${{ github.event.inputs.solution_name }}
           solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}.zip
 
+
       - name: unpack-solution action
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
@@ -53,13 +43,6 @@ jobs:
           solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ github.event.inputs.solution_name }}
           solution-type: 'Unmanaged'
           overwrite-files: true
-
-  feature-branch-and-pull-request:
-    runs-on: windows-latest
-    needs: export-and-unpack
-
-    steps:
-      - uses: actions/checkout@v4
 
       - name: create new branch
         run: |
