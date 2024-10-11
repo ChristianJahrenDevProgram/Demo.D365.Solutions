@@ -7,6 +7,10 @@ on:
         description: 'Solution to export'
         required: true
         default: 'ALM basis'
+      solution_description:
+        description: 'Solution description'
+        required: true
+        default: 'Brief summary here'
       solution_version:
         description: 'Version of the solution'
         required: true
@@ -71,5 +75,5 @@ jobs:
           branch: feature/${{ github.event.inputs.solution_name }}
           base: develop
           title: 'Exported and unpacked solution ${{ github.event.inputs.solution_name }}'
-          body: 'This PR includes the latest export of the solution ${{ github.event.inputs.solution_name }} from Power Platform.'
+          body: '${{ github.event.inputs.solution_description }}'
           draft: false
