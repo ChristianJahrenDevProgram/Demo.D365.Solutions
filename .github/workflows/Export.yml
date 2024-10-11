@@ -37,7 +37,7 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
 
-      - name: export-solution action
+      - name: Export solution
         uses: microsoft/powerplatform-actions/export-solution@v1
         with:
           environment-url: ${{ vars.ENVIRONMENTURL }}
@@ -48,7 +48,7 @@ jobs:
           solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}.zip
 
 
-      - name: unpack-solution action
+      - name: Unpack solution
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
           solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}.zip
@@ -56,7 +56,7 @@ jobs:
           solution-type: 'Unmanaged'
           overwrite-files: true
 
-      - name: create new branch
+      - name: Create new branch
         run: |
           git fetch origin
           if git rev-parse --verify origin/feature/${{ github.event.inputs.solution_name }}; then
@@ -66,12 +66,12 @@ jobs:
           git checkout -b feature/${{ github.event.inputs.solution_name }}
           git push origin feature/${{ github.event.inputs.solution_name }}
 
-      - name: copy solution files to target folder
+      - name: Copy solution files to target folder
         run: |
           mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
           cp -r ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
 
-      - name: commit changes
+      - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -81,7 +81,7 @@ jobs:
 
 
 
-      - name: create PR to develop
+      - name: Create PR to develop
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
