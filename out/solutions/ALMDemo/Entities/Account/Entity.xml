@@ -28,7 +28,7 @@
           <IsRetrievable>1</IsRetrievable>
           <IsLocalizable>0</IsLocalizable>
           <displaynames>
-            <displayname description="AccountId" languagecode="1033" />
+            <displayname description="AccountIdd" languagecode="1033" />
           </displaynames>
           <Descriptions>
             <Description description="Unique identifier of the account." languagecode="1033" />
