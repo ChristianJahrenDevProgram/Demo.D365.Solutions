@@ -14,7 +14,7 @@ on:
 
 jobs:
   export-and-create-pr:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     
     env:
       RUNNER_DEBUG: 1
