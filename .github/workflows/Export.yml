@@ -14,9 +14,9 @@ on:
 
 env:
   RUNNER_DEBUG: 1
-  SOLUTION_EXPORTED_FOLDER: out/exported/
-  SOLUTION_FOLDER: out/solutions/
-  SOLUTION_TARGET_FOLDER: solutions/
+  SOLUTION_EXPORTED_FOLDER: out/exported
+  SOLUTION_FOLDER: out/solutions
+  SOLUTION_TARGET_FOLDER: solutions
 
 jobs:
   export-and-unpack:
