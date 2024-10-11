@@ -6,11 +6,11 @@ on:
       solution_name:
         description: 'Solution to export'
         required: true
-        default: 'ALMDemo'
+        default: 'SOLUTION NAME HERE'
       solution_description:
         description: 'Solution description'
         required: true
-        default: 'Brief summary here'
+        default: ''
 
 jobs:
   export-and-create-pr:
