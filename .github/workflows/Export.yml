@@ -1,4 +1,4 @@
-name: 01. Export and create PR to develop
+name: Export and create PR to develop
 
 on:
   workflow_dispatch:
@@ -11,6 +11,18 @@ on:
         description: 'Solution description'
         required: true
         default: ''
+      type_of_solution:
+        description: 'Label'
+        type: 'choice'
+        required: false
+        options: 
+        - accces-task
+        - development-task
+        - bug
+      solution_description:
+        description: 'Related to issue'
+        required: false
+        default: '#'
 
 jobs:
   export-and-create-pr:
