@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - develop
+  workflow_dispatch:
+  
 env:
   RUNNER_DEBUG: 1
   SOLUTION_EXPORTED_FOLDER: out/exported/
