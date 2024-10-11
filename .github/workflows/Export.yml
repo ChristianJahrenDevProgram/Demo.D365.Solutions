@@ -21,6 +21,7 @@ jobs:
       SOLUTION_EXPORTED_FOLDER: out/exported/
       SOLUTION_FOLDER: out/solutions/
       SOLUTION_TARGET_FOLDER: solutions/
+      SOLUTION_TARGET_FOLDER_NAME: ALMDemo
       
     steps:
       - uses: actions/checkout@v4
@@ -67,9 +68,9 @@ jobs:
 
       - name: copy solution files to target folder
         run: |
-          mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
-          cp -r ${{ env.SOLUTION_FOLDER }}/${{ github.event.inputs.solution_name }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
-
+          mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          cp -r ${{ env.SOLUTION_FOLDER }}/${{ github.event.inputs.solution_name }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          
       - name: commit changes
         run: |
           git config user.name "github-actions[bot]"
