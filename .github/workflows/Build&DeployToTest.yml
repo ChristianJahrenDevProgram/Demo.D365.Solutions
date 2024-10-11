@@ -1,10 +1,9 @@
-name: Build and Deploy to Test
+name: 02. Build and Deploy to Test
 
 on:
   push:
     branches:
       - develop
-      
 env:
   RUNNER_DEBUG: 1
   SOLUTION_EXPORTED_FOLDER: out/exported/
