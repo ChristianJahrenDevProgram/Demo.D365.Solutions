@@ -1,4 +1,4 @@
-name: Export and create PR to develop
+name: 02. Export and create PR to develop
 
 on:
   workflow_dispatch:
