@@ -2,7 +2,7 @@
 <Entity xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Name LocalizedName="Contact" OriginalName="">Contact</Name>
   <EntityInfo>
-    <entity Name="Contact" unmodified="1">
+    <entity Name="Contact">
       <attributes>
         <attribute PhysicalName="Address1_FreightTermsCode" unmodified="1">
           <Type>picklist</Type>
@@ -58,7 +58,7 @@
             <Description description="Select the freight terms for the primary address to make sure shipping orders are processed correctly." languagecode="1033" />
           </Descriptions>
         </attribute>
-        <attribute PhysicalName="Address1_Line2" unmodified="1">
+        <attribute PhysicalName="Address1_Line2">
           <Type>nvarchar</Type>
           <Name>address1_line2</Name>
           <LogicalName>address1_line2</LogicalName>
@@ -86,7 +86,7 @@
           <MaxLength>250</MaxLength>
           <Length>500</Length>
           <displaynames>
-            <displayname description="Address 1: Street 2" languagecode="1033" />
+            <displayname description="Address 1: Street 22" languagecode="1033" />
           </displaynames>
           <Descriptions>
             <Description description="Type the second line of the primary address." languagecode="1033" />
