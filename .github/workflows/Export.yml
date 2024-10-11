@@ -69,7 +69,7 @@ jobs:
       - name: copy solution files to target folder
         run: |
           mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
-          cp -r ${{ env.SOLUTION_FOLDER }}/${{ github.event.inputs.solution_name }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          cp -r ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
 
       - name: commit changes
         run: |
