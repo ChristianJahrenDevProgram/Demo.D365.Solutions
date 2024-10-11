@@ -6,15 +6,11 @@ on:
       solution_name:
         description: 'Solution to export'
         required: true
-        default: 'ALM basis'
+        default: 'ALMDemo'
       solution_description:
         description: 'Solution description'
         required: true
         default: 'Brief summary here'
-      solution_version:
-        description: 'Version of the solution'
-        required: true
-        default: '1.0.0.0'
 
 jobs:
   export-and-create-pr:
@@ -39,7 +35,6 @@ jobs:
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
-          solution-name: ${{ github.event.inputs.solution_name }}
 
       - name: export-solution action
         uses: microsoft/powerplatform-actions/export-solution@v1
