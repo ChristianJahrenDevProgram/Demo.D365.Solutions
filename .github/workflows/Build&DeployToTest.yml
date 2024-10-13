@@ -7,7 +7,7 @@ on:
       - develop
     paths-ignore:
       - '.github/workflows/**'
-      
+
 env:
   RUNNER_DEBUG: 1
   SOLUTION_EXPORTED_FOLDER: out/exported/
@@ -27,8 +27,8 @@ jobs:
       
       - name: Extract feature branch from commit message
         run: |
-          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
-          FEATURE_BRANCH=$(echo "$COMMIT_MESSAGE" | sed 's#.*/##')
+          # Hente ut siste ordet fra commit-meldingen
+          FEATURE_BRANCH=$(echo "${{ github.event.head_commit.message }}" | awk '{print $NF}')
           echo "solution_name=$FEATURE_BRANCH" >> $GITHUB_ENV
 
       - name: Print solution name
