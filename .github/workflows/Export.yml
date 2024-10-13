@@ -99,7 +99,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: feature/${{ github.event.inputs.solution_name }}
           base: develop
-          title: 'Exported and unpacked solution ${{ github.event.inputs.solution_name }}'
+          title: '*do not edit* Exported and unpacked solution ${{ github.event.inputs.solution_name }}'
           body: |
             Description: ${{ github.event.inputs.solution_description }}
             Label: ${{ github.event.inputs.type_of_solution }}
