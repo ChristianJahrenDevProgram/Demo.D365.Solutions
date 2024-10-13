@@ -23,8 +23,40 @@ jobs:
       - name: Install Power Platform Tools
         uses: microsoft/powerplatform-actions/actions-install@v1
       
-      - name: Print PR merge commit message
-        run: echo "Commit message= ${{ github.event.head_commit.message }}"
+      - name: Extract feature branch from commit message
+        run: |
+          COMMIT_MESSAGE="${{ github.event.head_commit.message }}"
+          FEATURE_BRANCH=$(echo "$COMMIT_MESSAGE" | sed 's#.*/##')
+          echo "solution_name=$FEATURE_BRANCH" >> $GITHUB_ENV
 
       - name: Print solution name
-        run: echo "Solution name is ${{ env.solution_name }}"
+        run: echo "The solution name is ${{ env.solution_name }}"
+
+      - name: Import solution as unmanaged to build environment
+        uses: microsoft/powerplatform-actions/import-solution@v1
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+          solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}.zip
+          force-overwrite: true
+          publish-changes: true
+
+      - name: Export solution as managed
+        uses: microsoft/powerplatform-actions/export-solution@v1
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+          solution-name: ${{ env.solution_name }}
+          managed: true
+          solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
+
+      - name: Publish artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: managedSolution
+          path: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
+
