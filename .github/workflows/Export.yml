@@ -100,5 +100,8 @@ jobs:
           branch: feature/${{ github.event.inputs.solution_name }}
           base: develop
           title: 'Exported and unpacked solution ${{ github.event.inputs.solution_name }}'
-          body: '${{ github.event.inputs.solution_description }}'
+          body: |
+            Description: ${{ github.event.inputs.solution_description }}
+            Label: ${{ github.event.inputs.type_of_solution }}
+            Issue: fixes ${{ github.event.inputs.type_of_solution }}
           draft: false
