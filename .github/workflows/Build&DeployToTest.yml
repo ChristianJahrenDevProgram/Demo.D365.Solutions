@@ -27,7 +27,7 @@ jobs:
         id: extract-solution
         run: |
           BRANCH_NAME="${{ github.ref }}"
-          echo "github.ref: ${{ BRANCH_NAME }}"
+          echo "github.ref: ${ BRANCH_NAME }"
           SOLUTION_NAME="${BRANCH_NAME#feature/}"
           echo "solution_name=${SOLUTION_NAME}" >> $GITHUB_ENV
 
