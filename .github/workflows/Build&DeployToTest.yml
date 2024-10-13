@@ -5,7 +5,9 @@ on:
   push:
     branches:
       - develop
-  
+    paths-ignore:
+      - '.github/workflows/**'
+      
 env:
   RUNNER_DEBUG: 1
   SOLUTION_EXPORTED_FOLDER: out/exported/
