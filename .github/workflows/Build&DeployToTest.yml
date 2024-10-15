@@ -37,9 +37,10 @@ jobs:
       - name: Import solution as unmanaged to build environment
         uses: microsoft/powerplatform-actions/import-solution@v1
         with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
-          app-id: ${{ vars.CLIENTIDALMDEV }}
-          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+        # app reg in test
+          environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
+          app-id: ${{ vars.TEST_CLIENT_ID }}
+          client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
           tenant-id: ${{ vars.TENANTID }}
           solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}.zip
           force-overwrite: true
@@ -48,9 +49,9 @@ jobs:
       - name: Export solution as managed
         uses: microsoft/powerplatform-actions/export-solution@v1
         with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
-          app-id: ${{ vars.CLIENTIDALMDEV }}
-          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
+          app-id: ${{ vars.TEST_CLIENT_ID }}
+          client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ env.solution_name }}
           managed: true
