@@ -70,7 +70,7 @@ jobs:
           path: ${{ env.SOLUTION_EXPORTED_FOLDER }}/
 
       - name: Import solution to prod env
-        uses: microsoft/powerplatform-actions/import-solution@v0
+        uses: microsoft/powerplatform-actions/import-solution@v1
         with:
           environment-url: ${{ vars.ENVIRONMENTURL }}
           app-id: ${{ vars.CLIENTIDALMDEV }}
