@@ -66,7 +66,7 @@ jobs:
           solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}.zip
           solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
           solution-type: 'Unmanaged'
-          overwrite-files: true
+          overwrite-files: false
 
       - name: Create new branch
         run: |
