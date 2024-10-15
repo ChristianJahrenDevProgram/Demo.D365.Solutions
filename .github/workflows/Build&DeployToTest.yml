@@ -79,5 +79,5 @@ jobs:
           solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
           force-overwrite: true
           publish-changes: true
-          stage-and-upgrade: true
+          stage-and-upgrade: false
 
