@@ -1,3 +1,4 @@
+# testing
 name: 02. Build and Deploy to Test
 
 on:
@@ -13,8 +14,6 @@ env:
   SOLUTION_EXPORTED_FOLDER: out/exported/
   SOLUTION_FOLDER: out/solutions/
   SOLUTION_TARGET_FOLDER: solutions/
-  SOLUTION_SHIP_FOLDER: out/shop/
-  SOLUTION_RELEASE_FOLDER: out/release/
   SOLUTION_TARGET_FOLDER_NAME: ALMDemo
 
 jobs:
@@ -39,10 +38,9 @@ jobs:
       - name: Import solution as unmanaged to build environment
         uses: microsoft/powerplatform-actions/import-solution@v1
         with:
-        # app reg in test
-          environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
-          app-id: ${{ vars.TEST_CLIENT_ID }}
-          client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}.zip
           force-overwrite: true
@@ -51,9 +49,9 @@ jobs:
       - name: Export solution as managed
         uses: microsoft/powerplatform-actions/export-solution@v1
         with:
-          environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
-          app-id: ${{ vars.TEST_CLIENT_ID }}
-          client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ env.solution_name }}
           managed: true
@@ -64,4 +62,22 @@ jobs:
         with:
           name: managedSolution
           path: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
+
+      - name: Fetch the ready to ship solution from GH artifact store
+        uses: actions/download-artifact@v4
+        with:
+          name: managedSolution
+          path: ${{ env.SOLUTION_EXPORTED_FOLDER }}/
+
+      - name: Import solution to prod env
+        uses: microsoft/powerplatform-actions/import-solution@v0
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+          solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
+          force-overwrite: true
+          publish-changes: true
+          stage-and-upgrade: true
 
