@@ -72,9 +72,9 @@ jobs:
       - name: Import solution to prod env
         uses: microsoft/powerplatform-actions/import-solution@v1
         with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
-          app-id: ${{ vars.CLIENTIDALMDEV }}
-          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
+          app-id: ${{ vars.TEST_CLIENT_ID }}
+          client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
           tenant-id: ${{ vars.TENANTID }}
           solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
           force-overwrite: true
