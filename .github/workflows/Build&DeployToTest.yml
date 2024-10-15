@@ -13,6 +13,8 @@ env:
   SOLUTION_EXPORTED_FOLDER: out/exported/
   SOLUTION_FOLDER: out/solutions/
   SOLUTION_TARGET_FOLDER: solutions/
+  SOLUTION_SHIP_FOLDER: out/shop/
+  SOLUTION_RELEASE_FOLDER: out/release/
   SOLUTION_TARGET_FOLDER_NAME: ALMDemo
 
 jobs:
