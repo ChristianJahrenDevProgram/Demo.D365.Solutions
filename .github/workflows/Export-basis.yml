@@ -51,6 +51,9 @@ jobs:
       SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
       #SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
       
+    permissions:
+      contents: write
+      
     steps:
       - uses: actions/checkout@v4
 
