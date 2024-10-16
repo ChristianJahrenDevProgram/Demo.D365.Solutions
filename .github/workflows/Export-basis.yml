@@ -110,10 +110,10 @@ jobs:
           git checkout -b feature/${{ github.event.inputs.solution_name }}
           git push origin feature/${{ github.event.inputs.solution_name }}
 
-      - name: Copy solution files to target folder
-        run: |
-          mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
-          cp -r "${{ github.workspace }}/${{ env.SOLUTION_TARGET_FOLDER }}"/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
+      #- name: Copy solution files to target folder
+       # run: |
+        #  mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
+         # cp -r "${{ github.workspace }}/${{ env.SOLUTION_TARGET_FOLDER }}"/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
 
       # git add ${{env.SOLUTION_TARGET_FOLDER}}/${{ github.event.inputs.solution_name }} --all
       - name: Commit changes
