@@ -46,8 +46,8 @@ jobs:
     
     env:
       RUNNER_DEBUG: 1
-      SOLUTION_EXPORTED_FOLDER: out/exported/
-      SOLUTION_FOLDER: out/solutions/
+      #SOLUTION_EXPORTED_FOLDER: out/exported/
+      #SOLUTION_FOLDER: out/solutions/
       SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
       #SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
 
@@ -76,10 +76,9 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ github.event.inputs.solution_name }}
-          solution-output-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip"
+          solution-output-file: "${{runner.temp}}/${{ github.event.inputs.solution_name }}.zip"
           managed: false
           run-asynchronously: true
-          overwrite: true
 
       - name: Export Solution - Managed
         uses: microsoft/powerplatform-actions/export-solution@v1
@@ -89,16 +88,18 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ github.event.inputs.solution_name }}
-          solution-output-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}_managed.zip"
+          solution-output-file: "${{runner.temp}}/${{ github.event.inputs.solution_name }}_managed.zip"
           managed: true
           run-asynchronously: true
-          overwrite: true
+
+      - name: Create solution folder
+        run: mkdir -p "${{ github.workspace }}/${{ github.event.inputs.solution_name }}/Solution"
 
       - name: Unpack Solution
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
-          solution-file: '${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip'
-          solution-folder: ${{env.SOLUTION_TARGET_FOLDER}}/${{ github.event.inputs.solution_name }}
+          solution-file: "${{runner.temp}}/${{ github.event.inputs.solution_name }}.zip"
+          solution-folder: "${{ github.workspace }}/${{ github.event.inputs.solution_name }}/Solution"
           solution-type: 'Both'
           overwrite-files: true
 
@@ -117,11 +118,12 @@ jobs:
         #  mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
          # cp -r ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
 
+      # git add ${{env.SOLUTION_TARGET_FOLDER}}/${{ github.event.inputs.solution_name }} --all
       - name: Commit changes
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
-          git add ${{env.SOLUTION_TARGET_FOLDER}}/${{ github.event.inputs.solution_name }} --all
+          git add --all
           git commit -m 'Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
           git push origin feature/${{ github.event.inputs.solution_name }}
 
