@@ -1,4 +1,4 @@
-name: 03. Basis - Export and create PR to develop
+name: 03. ${{ github.event.inputs.solution_name }} - Export and create PR to ${{ github.event.inputs.branch }}
 
 on:
   workflow_dispatch:
