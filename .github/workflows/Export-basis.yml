@@ -1,4 +1,4 @@
-name: 03. ${{ github.event.inputs.solution_name }} - Export and create PR to ${{ github.event.inputs.branch }}
+name: 03. Basis - Export and create PR to develop
 
 on:
   workflow_dispatch:
@@ -50,7 +50,7 @@ jobs:
       SOLUTION_FOLDER: out/solutions/
       SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
       #SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
-      
+
     permissions:
       contents: write
       
