@@ -132,16 +132,16 @@ jobs:
 
 
 
-      # - name: Create PR to develop
-      #   uses: peter-evans/create-pull-request@v5
-      #   with:
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     branch: feature/${{ github.event.inputs.solution_name }}
-      #     base: develop
-      #     title: '*do not edit* Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
-      #     body: |
-      #       Description: ${{ github.event.inputs.solution_description }}
-      #       Label: ${{ github.event.inputs.type_of_solution }}
-      #       Issue: fixes ${{ github.event.inputs.type_of_solution }}
-      #       Import: ${{ github.event.inputs.type_of_import }}
-      #     draft: false
+      - name: Create PR to develop
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: feature/${{ github.event.inputs.solution_name }}
+          base: develop
+          title: '*do not edit* Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
+          body: |
+            Description: ${{ github.event.inputs.solution_description }}
+            Label: ${{ github.event.inputs.type_of_solution }}
+            Issue: fixes ${{ github.event.inputs.type_of_solution }}
+            Import: ${{ github.event.inputs.type_of_import }}
+          draft: false
