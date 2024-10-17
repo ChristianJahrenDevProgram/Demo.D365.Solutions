@@ -45,9 +45,9 @@ jobs:
     
     env:
       RUNNER_DEBUG: 1
-      SOLUTION_EXPORTED_FOLDER: out/exported/
+      #SOLUTION_EXPORTED_FOLDER: out/exported/
       SOLUTION_FOLDER: out/solutions/
-      SOLUTION_TARGET_FOLDER: solutions/
+      SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
       SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
       
     steps:
@@ -96,7 +96,7 @@ jobs:
           solution-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip"
           solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
           solution-type: 'Both'
-          overwrite-files: false
+          overwrite-files: true
 
       - name: Create new branch
         run: |
@@ -120,6 +120,8 @@ jobs:
           git add ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
           git commit -m "Exported and unpacked solution to ${{ env.SOLUTION_TARGET_FOLDER_NAME }}."
           git push origin feature/${{ github.event.inputs.solution_name }}
+
+
 
       - name: Create PR to develop
         uses: peter-evans/create-pull-request@v5
