@@ -45,8 +45,8 @@ jobs:
     
     env:
       RUNNER_DEBUG: 1
-      #SOLUTION_EXPORTED_FOLDER: out/exported/
-      SOLUTION_FOLDER: out/solutions/
+      #SOLUTION_EXPORT_FOLDER: PowerPlatform/Export/
+      #SOLUTION_FOLDER: out/solutions/
       SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
       SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
       
@@ -94,7 +94,7 @@ jobs:
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
           solution-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip"
-          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          solution-folder: ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
           solution-type: 'Both'
           overwrite-files: true
 
@@ -108,17 +108,17 @@ jobs:
           git checkout -b feature/${{ github.event.inputs.solution_name }}
           git push origin feature/${{ github.event.inputs.solution_name }}
 
-      - name: Copy solution files to target folder
-        run: |
-          mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
-          cp -r ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+      # - name: Copy solution files to target folder
+      #   run: |
+      #     mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+      #     cp -r ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
 
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
-          git commit -m "Exported and unpacked solution to ${{ env.SOLUTION_TARGET_FOLDER_NAME }}."
+          git commit -m "Exported and unpacked solution ${{ github.event.inputs.solution_name }} with import ${{ github.event.inputs.type_of_import }}"
           git push origin feature/${{ github.event.inputs.solution_name }}
 
 
