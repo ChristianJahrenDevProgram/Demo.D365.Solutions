@@ -11,10 +11,9 @@ on:
 
 env:
   RUNNER_DEBUG: 1
-  SOLUTION_EXPORTED_FOLDER: out/exported/
+  SOLUTION_EXPORT_FOLDER: out/export/
   SOLUTION_FOLDER: out/solutions/
   SOLUTION_TARGET_FOLDER: solutions/
-  SOLUTION_TARGET_FOLDER_NAME: ALMDemo
 
 jobs:
   convert-to-managed:
@@ -26,58 +25,71 @@ jobs:
       - name: Install Power Platform Tools
         uses: microsoft/powerplatform-actions/actions-install@v1
       
-      - name: Extract feature branch from commit message
+      - name: Extract feature branch and import type from commit message
         run: |
-          # Fjerne linjeskift og hente ut siste ordet fra commit-meldingen
           FEATURE_BRANCH=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n' | awk '{print $NF}')
+          IMPORT_TYPE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n' | awk '{print $(NF-1)}')
           echo "solution_name=$FEATURE_BRANCH" >> $GITHUB_ENV
+          echo "import_type=$IMPORT_TYPE" >> $GITHUB_ENV
 
-      - name: Print solution name
-        run: echo "The solution name is ${{ env.solution_name }}"
+      - name: Print solution name and import type
+        run: |
+          echo "The solution name is ${{ env.solution_name }}"
+          echo "The import type is ${{ env.import_type }}"
 
+      - name: Pack Solution
+        uses: microsoft/powerplatform-actions/pack-solution@v1
+        with:
+          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.solution_name }}
+          solution-file: ${{runner.temp}}/packed/${{ env.solution_name }}_managed.zip
+          solution-type: 'Managed'
+          overwrite-files: true
+
+      
       - name: Import solution as unmanaged to build environment
         uses: microsoft/powerplatform-actions/import-solution@v1
         with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
+          environment-url: ${{ vars.BUILD_ENVIRONMENT_URL }}
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
-          solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}.zip
+          solution-file: ${{runner.temp}}/packed/${{ env.solution_name }}_managed.zip
           force-overwrite: true
           publish-changes: true
 
-      - name: Export solution as managed
-        uses: microsoft/powerplatform-actions/export-solution@v1
-        with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
-          app-id: ${{ vars.CLIENTIDALMDEV }}
-          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
-          tenant-id: ${{ vars.TENANTID }}
-          solution-name: ${{ env.solution_name }}
-          managed: true
-          solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
+      # - name: Export solution as managed
+      #   uses: microsoft/powerplatform-actions/export-solution@v1
+      #   with:
+      #     environment-url: ${{ vars.ENVIRONMENTURL }}
+      #     app-id: ${{ vars.CLIENTIDALMDEV }}
+      #     client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+      #     tenant-id: ${{ vars.TENANTID }}
+      #     solution-name: ${{ env.solution_name }}
+      #     managed: true
+      #     solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
 
-      - name: Publish artifact
+      - name: Publish Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: managedSolution
-          path: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
+          name: drop
+          path: '${{runner.temp}}/packed/**'
+          overwrite: true
 
-      - name: Fetch the ready to ship solution from GH artifact store
-        uses: actions/download-artifact@v4
-        with:
-          name: managedSolution
-          path: ${{ env.SOLUTION_EXPORTED_FOLDER }}/
+      # - name: Fetch the ready to ship solution from GH artifact store
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: managedSolution
+      #     path: ${{ env.SOLUTION_EXPORTED_FOLDER }}/
 
-      - name: Import solution to prod env
-        uses: microsoft/powerplatform-actions/import-solution@v1
-        with:
-          environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
-          app-id: ${{ vars.TEST_CLIENT_ID }}
-          client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
-          tenant-id: ${{ vars.TENANTID }}
-          solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
-          force-overwrite: true
-          publish-changes: true
-          stage-and-upgrade: true
+      # - name: Import solution to prod env
+      #   uses: microsoft/powerplatform-actions/import-solution@v1
+      #   with:
+      #     environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
+      #     app-id: ${{ vars.TEST_CLIENT_ID }}
+      #     client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
+      #     tenant-id: ${{ vars.TENANTID }}
+      #     solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
+      #     force-overwrite: true
+      #     publish-changes: true
+      #     stage-and-upgrade: true
 
