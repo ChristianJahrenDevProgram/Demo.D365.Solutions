@@ -16,7 +16,7 @@ env:
   SOLUTION_TARGET_FOLDER: solutions/
 
 jobs:
-  convert-to-managed:
+  build-and-stage:
     runs-on: ubuntu-latest
 
     steps:
@@ -37,14 +37,20 @@ jobs:
           echo "The solution name is ${{ env.solution_name }}"
           echo "The import type is ${{ env.import_type }}"
 
+      - name: Determine if upgrade (true) or update (false)
+        run: |
+          if [ "${{ env.import_type }}" = "upgrade" ]; then
+            echo "is_upgrade=true" >> $GITHUB_ENV
+          else
+            echo "is_upgrade=false" >> $GITHUB_ENV
+          fi
+
       - name: Pack Solution
         uses: microsoft/powerplatform-actions/pack-solution@v1
         with:
           solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.solution_name }}
           solution-file: ${{runner.temp}}/packed/${{ env.solution_name }}_managed.zip
           solution-type: 'Managed'
-          overwrite-files: true
-
       
       - name: Import solution as unmanaged to build environment
         uses: microsoft/powerplatform-actions/import-solution@v1
@@ -54,19 +60,9 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-file: ${{runner.temp}}/packed/${{ env.solution_name }}_managed.zip
-          force-overwrite: true
-          publish-changes: true
-
-      # - name: Export solution as managed
-      #   uses: microsoft/powerplatform-actions/export-solution@v1
-      #   with:
-      #     environment-url: ${{ vars.ENVIRONMENTURL }}
-      #     app-id: ${{ vars.CLIENTIDALMDEV }}
-      #     client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
-      #     tenant-id: ${{ vars.TENANTID }}
-      #     solution-name: ${{ env.solution_name }}
-      #     managed: true
-      #     solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
+          force-overwrite: false # tar evigheter med true
+          publish-changes: false
+          run-asynchronously: false
 
       - name: Publish Artifacts
         uses: actions/upload-artifact@v4
@@ -75,21 +71,32 @@ jobs:
           path: '${{runner.temp}}/packed/**'
           overwrite: true
 
-      # - name: Fetch the ready to ship solution from GH artifact store
-      #   uses: actions/download-artifact@v4
-      #   with:
-      #     name: managedSolution
-      #     path: ${{ env.SOLUTION_EXPORTED_FOLDER }}/
+  release-to-test:
+    needs: [build-and-stage]
+    runs-on: ubuntu-latest
+    env:
+      RUNNER_DEBUG: 1
 
-      # - name: Import solution to prod env
-      #   uses: microsoft/powerplatform-actions/import-solution@v1
-      #   with:
-      #     environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
-      #     app-id: ${{ vars.TEST_CLIENT_ID }}
-      #     client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
-      #     tenant-id: ${{ vars.TENANTID }}
-      #     solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
-      #     force-overwrite: true
-      #     publish-changes: true
-      #     stage-and-upgrade: true
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        path: '${{runner.temp}}/artifacts'
+        name: 'drop'
+
+    - name: Import solution to Test
+      uses: microsoft/powerplatform-actions/import-solution@v1
+      with:
+        environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
+        app-id: ${{ vars.TEST_CLIENT_ID }}
+        client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
+        tenant-id: ${{ vars.TENANTID }}
+        solution-file: '${{runner.temp}}/artifacts/${{ env.solution_name }}_managed.zip'
+        force-overwrite: ${{ env.is_upgrade }}
+        publish-changes: true
+        activate-plugins: true
+        run-asynchronously: false # endre til true etter testing
+        stage-and-upgrade: ${{ env.is_upgrade }}
 
