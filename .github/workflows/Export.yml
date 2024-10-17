@@ -47,8 +47,8 @@ jobs:
       RUNNER_DEBUG: 1
       SOLUTION_EXPORT_FOLDER: out/export/
       SOLUTION_FOLDER: out/solutions/
-      SOLUTION_TARGET_FOLDER: powerplatform/solutions/
-      SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
+      SOLUTION_TARGET_FOLDER: solutions/
+      #SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
       
     steps:
       - uses: actions/checkout@v4
@@ -72,7 +72,7 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ github.event.inputs.solution_name }}
-          solution-output-file: ${{runner.temp}}/exported/${{ env.SOLUTION_TARGET_FOLDER_NAME }}.zip
+          solution-output-file: ${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip
           managed: false
           run-asynchronously: true
           overwrite: true
@@ -85,7 +85,7 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ github.event.inputs.solution_name }}
-          solution-output-file: ${{runner.temp}}/exported/${{ env.SOLUTION_TARGET_FOLDER_NAME }}_managed.zip
+          solution-output-file: ${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}_managed.zip
           managed: true
           run-asynchronously: true
           overwrite: true
@@ -93,8 +93,8 @@ jobs:
       - name: Unpack solution
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
-          solution-file: ${{runner.temp}}/exported/${{ env.SOLUTION_TARGET_FOLDER_NAME }}.zip
-          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          solution-file: ${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip
+          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ github.event.inputs.solution_name }}
           solution-type: 'Both'
           overwrite-files: true
 
@@ -102,8 +102,8 @@ jobs:
         uses: microsoft/powerplatform-actions/branch-solution@v1
         with:
           branch-name: feature/${{ github.event.inputs.solution_name }}
-          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
-          solution-target-folder: ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ github.event.inputs.solution_name }}
+          solution-target-folder: ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           allow-empty-commit: true
 
