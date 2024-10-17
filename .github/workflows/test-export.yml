@@ -98,7 +98,7 @@ jobs:
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
           solution-file: '${{runner.temp}}/exported/ALMDemo.zip'
-          solution-folder: '${{env.SOLUTION_TARGET_FOLDER}}/${{ github.event.inputs.solution_name }}/Solutions'
+          solution-folder: '${{env.SOLUTION_TARGET_FOLDER}}/Solutions/${{ github.event.inputs.solution_name }}'
           #solution-folder: 'PowerPlatform/Solutions/ALMDemo/TestFolder'
           solution-type: 'Both'
           overwrite-files: true
@@ -117,6 +117,20 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add '${{env.SOLUTION_TARGET_FOLDER}}/${{ github.event.inputs.solution_name }}/Solutions' --all
+          git add '${{env.SOLUTION_TARGET_FOLDER}}/Solutions/${{ github.event.inputs.solution_name }}' --all
           git commit -m "Export and commit: Test2"
           git push origin feature/${{ github.event.inputs.solution_name }}
+
+      - name: Create PR to develop
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: feature/${{ github.event.inputs.solution_name }}
+          base: develop
+          title: '*do not edit* Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
+          body: |
+            Description: ${{ github.event.inputs.solution_description }}
+            Type of import: ${{ github.event.inputs.type_of_import }}
+            Label: ${{ github.event.inputs.type_of_solution }}
+            Issue: fixes ${{ github.event.inputs.type_of_solution }}
+          draft: false
