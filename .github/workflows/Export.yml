@@ -56,13 +56,17 @@ jobs:
       - name: Install Power Platform Tools
         uses: microsoft/powerplatform-actions/actions-install@v1
 
-      # - name: Publish Solution
-      #   uses: microsoft/powerplatform-actions/publish-solution@v1
-      #   with:
-      #     environment-url: ${{ vars.ENVIRONMENTURL }}
-      #     app-id: ${{ vars.CLIENTIDALMDEV }}
-      #     client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
-      #     tenant-id: ${{ vars.TENANTID }}
+      - name: Publish Solution
+        uses: microsoft/powerplatform-actions/publish-solution@v1
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+
+      - name: Get current timestamp
+        id: timestamp
+        run: echo "timestamp=$(date -u +"%d-%m-%YT%H:%M")" >> $GITHUB_ENV
 
       - name: Export Solution - Unmanaged
         uses: microsoft/powerplatform-actions/export-solution@v1
@@ -101,41 +105,17 @@ jobs:
       - name: Prepare for PR
         uses: microsoft/powerplatform-actions/branch-solution@v1
         with:
-          branch-name: feature/${{ github.event.inputs.solution_name }}
+          branch-name: 'feature/${{ github.event.inputs.solution_name }}-${{ env.timestamp }}'
           solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ github.event.inputs.solution_name }}
           solution-target-folder: ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           allow-empty-commit: true
 
-      # - name: Create new branch
-      #   run: |
-      #     git fetch origin
-      #     if git rev-parse --verify origin/feature/${{ github.event.inputs.solution_name }}; then
-      #       echo "Branch feature/${{ github.event.inputs.solution_name }} already exists. Deleting..."
-      #       git push origin --delete feature/${{ github.event.inputs.solution_name }}
-      #     fi
-      #     git checkout -b feature/${{ github.event.inputs.solution_name }}
-      #     git push origin feature/${{ github.event.inputs.solution_name }}
-
-      # - name: Copy solution files to target folder
-      #   run: |
-      #     mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
-      #     cp -r ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
-
-      # - name: Commit changes
-      #   run: |
-      #     git config user.name "github-actions[bot]"
-      #     git config user.email "github-actions[bot]@users.noreply.github.com"
-      #     git add "${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}" --all
-      #     git commit -m "Exported and unpacked solution ${{ github.event.inputs.solution_name }} with import ${{ github.event.inputs.type_of_import }}"
-      #     git push origin feature/${{ github.event.inputs.solution_name }}
-
-
-
       - name: Create PR to develop
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'PR ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
           branch: feature/${{ github.event.inputs.solution_name }}
           base: develop
           title: '*do not edit* Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
