@@ -58,6 +58,7 @@ jobs:
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ github.event.inputs.solution_name }}
           solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}.zip
+          overwrite: true
 
 
       - name: Unpack solution
@@ -66,7 +67,7 @@ jobs:
           solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}.zip
           solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
           solution-type: 'Unmanaged'
-          overwrite-files: false
+          overwrite-files: true
 
       - name: Create new branch
         run: |
