@@ -72,7 +72,7 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ github.event.inputs.solution_name }}
-          solution-output-file: "${{ env.SOLUTION_EXPORT_FOLDER }}/${{ github.event.inputs.solution_name }}.zip"
+          solution-output-file: "${{ env.SOLUTION_EXPORT_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}.zip"
           managed: false
           run-asynchronously: true
           overwrite: true
@@ -85,7 +85,7 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ALMDemo
-          solution-output-file: "${{ env.SOLUTION_EXPORT_FOLDER }}/${{ github.event.inputs.solution_name }}_managed.zip"
+          solution-output-file: "${{ env.SOLUTION_EXPORT_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}_managed.zip"
           managed: true
           run-asynchronously: true
           overwrite: true
@@ -93,7 +93,7 @@ jobs:
       - name: Unpack solution
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
-          solution-file: "${{ env.SOLUTION_EXPORT_FOLDER }}/${{ github.event.inputs.solution_name }}.zip"
+          solution-file: "${{ env.SOLUTION_EXPORT_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}.zip"
           solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
           solution-type: 'Both'
           overwrite-files: true
@@ -103,7 +103,7 @@ jobs:
         with:
           branch-name: feature/${{ github.event.inputs.solution_name }}
           solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
-          solution-target-folder: ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
+          solution-target-folder: ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           allow-empty-commit: true
 
