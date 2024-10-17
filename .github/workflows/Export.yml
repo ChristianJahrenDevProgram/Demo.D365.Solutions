@@ -116,7 +116,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 'PR ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
-          branch: feature/${{ github.event.inputs.solution_name }}
+          branch: 'feature/${{ github.event.inputs.solution_name }}-${{ env.timestamp }}'
           base: develop
           title: '*do not edit* Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
           body: |
