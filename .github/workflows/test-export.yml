@@ -1,5 +1,4 @@
-name: 03. Basis - Export and create PR to develop
-
+name: 05. test 2 Export From DEV
 on:
   workflow_dispatch:
     inputs:
@@ -48,8 +47,8 @@ jobs:
       RUNNER_DEBUG: 1
       SOLUTION_EXPORTED_FOLDER: out/exported/
       SOLUTION_FOLDER: out/solutions/
-      SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
-      SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
+      SOLUTION_TARGET_FOLDER: PowerPlatform/
+      #SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
 
     permissions:
       contents: write
@@ -99,7 +98,8 @@ jobs:
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
           solution-file: '${{runner.temp}}/exported/ALMDemo.zip'
-          solution-folder: 'PowerPlatform/Solutions/ALMDemo/TestFolder'
+          solution-folder: '${{env.SOLUTION_TARGET_FOLDER}}/Solutions/${{ github.event.inputs.solution_name }}'
+          #solution-folder: 'PowerPlatform/Solutions/ALMDemo/TestFolder'
           solution-type: 'Both'
           overwrite-files: true
 
@@ -113,17 +113,10 @@ jobs:
           git checkout -b feature/${{ github.event.inputs.solution_name }}
           git push origin feature/${{ github.event.inputs.solution_name }}
 
-      #- name: Copy solution files to target folder
-       # run: |
-        #  mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
-         # cp -r ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
-
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add 'PowerPlatform/Solutions/ALMDemo/TestFolder' --all
-          git commit -m "Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}"
+          git add '${{env.SOLUTION_TARGET_FOLDER}}/Solutions/${{ github.event.inputs.solution_name }}' --all
+          git commit -m "Export and commit: Test2"
           git push origin feature/${{ github.event.inputs.solution_name }}
-
-
