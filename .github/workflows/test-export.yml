@@ -1,13 +1,60 @@
 name: 04. test Export From DEV
+
 on:
   workflow_dispatch:
+    inputs:
+      solution_name:
+        description: 'Solution to export'
+        required: true
+        default: 'ALMDemo'
+      branch:
+        description: 'Branch to commit to'
+        type: 'choice'
+        required: true
+        options: 
+        - 'develop'
+        #- 'hotfix'
+        default: 'develop'
+      solution_description:
+        description: 'Solution description'
+        required: false
+        default: ''
+      type_of_import:
+        description: 'Upgrade or Update'
+        type: 'choice'
+        required: true
+        options: 
+        - 'upgrade'
+        - 'update'
+        default: 'update'
+      type_of_solution:
+        description: 'Label'
+        type: 'choice'
+        required: false
+        options: 
+        - 'accces-task'
+        - 'development-task'
+        - 'bug'
+      related_to_issue:
+        description: 'Related to issue'
+        required: false
+        default: '#'
 
 jobs:
-  Export:
+  export-and-create-pr:
     runs-on: ubuntu-latest
+    
+    env:
+      RUNNER_DEBUG: 1
+      SOLUTION_EXPORTED_FOLDER: out/exported/
+      SOLUTION_FOLDER: out/solutions/
+      SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
+      SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
+
     permissions:
       contents: write
       pull-requests: write
+      
     steps:
       - uses: actions/checkout@v4
 
@@ -21,7 +68,6 @@ jobs:
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
-          solution-name: ALMDemo
         
       - name: Export Solution - Unmanaged
         uses: microsoft/powerplatform-actions/export-solution@v1
@@ -30,8 +76,8 @@ jobs:
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
-          solution-name: ALMDemo
-          solution-output-file: "${{runner.temp}}/exported/ALMDemo.zip"
+          solution-name: ${{ github.event.inputs.solution_name }}
+          solution-output-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip"
           managed: false
           run-asynchronously: true
           overwrite: true
@@ -44,7 +90,7 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ALMDemo
-          solution-output-file: "${{runner.temp}}/exported/ALMDemo_managed.zip"
+          solution-output-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}_managed.zip"
           managed: true
           run-asynchronously: true
           overwrite: true
@@ -53,19 +99,42 @@ jobs:
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
           solution-file: '${{runner.temp}}/exported/ALMDemo.zip'
-          solution-folder: 'PowerPlatform/Solutions/ALMDemo/Test'
+          solution-folder: 'PowerPlatform/Solutions/ALMDemo/TestFolder'
           solution-type: 'Both'
           overwrite-files: true
+
       - name: Create new branch
         run: |
           git fetch origin
-          git checkout -b feature/Test
-          git push origin feature/Test
+          if git rev-parse --verify origin/feature/${{ github.event.inputs.solution_name }}; then
+            echo "Branch feature/${{ github.event.inputs.solution_name }} already exists. Deleting..."
+            git push origin --delete feature/${{ github.event.inputs.solution_name }}
+          fi
+          git checkout -b feature/${{ github.event.inputs.solution_name }}
+          git push origin feature/${{ github.event.inputs.solution_name }}
+
+      #- name: Copy solution files to target folder
+       # run: |
+        #  mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+         # cp -r ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
 
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add 'PowerPlatform/Solutions/ALMDemo/Test' --all
-          git commit -m "Export and commit: Test"
-          git push origin feature/Test
+          git add 'PowerPlatform/Solutions/ALMDemo/TestFolder' --all
+          git commit -m "Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}"
+          git push origin feature/${{ github.event.inputs.solution_name }}
+
+      - name: Create PR to develop
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: feature/${{ github.event.inputs.solution_name }}
+          base: develop
+          title: '*do not edit* Exported and unpacked solution ${{ github.event.inputs.solution_name }}'
+          body: |
+            Description: ${{ github.event.inputs.solution_description }}
+            Label: ${{ github.event.inputs.type_of_solution }}
+            Issue: fixes ${{ github.event.inputs.type_of_solution }}
+          draft: false
