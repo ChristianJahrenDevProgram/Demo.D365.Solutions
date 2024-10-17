@@ -1,73 +1,156 @@
-name: 04. test export-and-branch-solution
-# Export solution from DEV environment
-#  unpack it and prepare, commit and push a git branch with the changes
-
+name: 05. test 2 Export From DEV
 on:
   workflow_dispatch:
     inputs:
-      # Change this value
       solution_name:
-        description: 'name of the solution to worked on from Power Platform'
+        description: 'Solution to export'
         required: true
         default: ALMDemo
        #Do Not change these values
       solution_exported_folder:
         description: 'folder name for staging the exported solution *do not change*'
+        default: 'ALMDemo'
+      branch:
+        description: 'Branch to commit to'
+        type: 'choice'
         required: true
-        default: test/exported/
-      solution_folder:
-        description: 'staging the unpacked solution folder before check-in *do not change*'
+        options: 
+        - 'develop'
+        #- 'hotfix'
+        default: 'develop'
+      solution_description:
+        description: 'Solution description'
+        required: false
+        default: ''
+      type_of_import:
+        description: 'Upgrade or Update'
+        type: 'choice'
         required: true
-        default: test/solutions/
-      solution_target_folder: 
-       description: 'folder name to be created and checked in *do not change*'
-       required: true
-       default: solutions/
-permissions:
-  contents: write
+        options: 
+        - 'upgrade'
+        - 'update'
+        default: 'update'
+      type_of_solution:
+        description: 'Label'
+        type: 'choice'
+        required: false
+        options: 
+        - 'accces-task'
+        - 'development-task'
+        - 'bug'
+      related_to_issue:
+        description: 'Related to issue'
+        required: false
+        default: '#'
+
 jobs:
-  export-from-dev:
-    runs-on: windows-latest
-    # or you can say runs-on: ubuntu-latest
+  export-and-create-pr:
+    runs-on: ubuntu-latest
+    
     env:
       RUNNER_DEBUG: 1
+      SOLUTION_EXPORTED_FOLDER: out/exported/
+      SOLUTION_FOLDER: out/solutions/
+      SOLUTION_TARGET_FOLDER: PowerPlatform/
+      #SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
 
+    permissions:
+      contents: write
+      pull-requests: write
+      
     steps:
-    - uses: actions/checkout@v2
-      with:
-        lfs: true
+      - uses: actions/checkout@v4
 
-    - name: who-am-i action
-      uses: microsoft/powerplatform-actions/who-am-i@v0
-      with:
-        environment-url: ${{ vars.ENVIRONMENTURL }}
-        app-id: ${{ vars.CLIENTIDALMDEV }}
-        client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
-        tenant-id: ${{ vars.TENANTID }}
+      - name: Install Power Platform Tools
+        uses: microsoft/powerplatform-actions/actions-install@v1
 
+      - name: Publish Solution
+        uses: microsoft/powerplatform-actions/publish-solution@v1
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+        
+      - name: Export Solution - Unmanaged
+        uses: microsoft/powerplatform-actions/export-solution@v1
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+          solution-name: ${{ github.event.inputs.solution_name }}
+          solution-output-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip"
+          managed: false
+          run-asynchronously: true
+          overwrite: true
 
-    - name: export-solution action
-      uses: microsoft/powerplatform-actions/export-solution@v1
-      with:
-        environment-url: ${{ vars.ENVIRONMENTURL }}
-        app-id: ${{ vars.CLIENTIDALMDEV }}
-        client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
-        tenant-id: ${{ vars.TENANTID }}
-        solution-name: ${{ github.event.inputs.solution_name }}
-        solution-output-file: ${{ github.event.inputs.solution_exported_folder}}/${{ github.event.inputs.solution_name }}.zip
+      - name: Export Solution - Managed
+        uses: microsoft/powerplatform-actions/export-solution@v1
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+          solution-name: ALMDemo
+          solution-output-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}_managed.zip"
+          managed: true
+          run-asynchronously: true
+          overwrite: true
+          
+      - name: Unpack Solution
+        uses: microsoft/powerplatform-actions/unpack-solution@v1
+        with:
+          solution-file: '${{runner.temp}}/exported/ALMDemo.zip'
+          solution-folder: '${{env.SOLUTION_TARGET_FOLDER}}/Solutions/${{ github.event.inputs.solution_name }}'
+          #solution-folder: 'PowerPlatform/Solutions/ALMDemo/TestFolder'
+          solution-type: 'Both'
+          overwrite-files: true
 
-    - name: unpack-solution action
-      uses: microsoft/powerplatform-actions/unpack-solution@v1
-      with:
-        solution-file: ${{ github.event.inputs.solution_exported_folder}}/${{ github.event.inputs.solution_name }}.zip
-        solution-folder: ${{ github.event.inputs.solution_folder}}/${{ github.event.inputs.solution_name }}
-        solution-type: 'Unmanaged'
-        overwrite-files: true
+      - name: Create new branch
+        run: |
+          git fetch origin
+          if git rev-parse --verify origin/feature/${{ github.event.inputs.solution_name }}; then
+            echo "Branch feature/${{ github.event.inputs.solution_name }} already exists. Deleting..."
+            git push origin --delete feature/${{ github.event.inputs.solution_name }}
+          fi
+          git checkout -b feature/${{ github.event.inputs.solution_name }}
+          git push origin feature/${{ github.event.inputs.solution_name }}
 
-    - name: branch-solution, prepare it for a PullRequest
-      uses: microsoft/powerplatform-actions/branch-solution@v0
-      with:
-        solution-folder: ${{ github.event.inputs.solution_folder}}/${{ github.event.inputs.solution_name }}
-        solution-target-folder: ${{ github.event.inputs.solution_target_folder}}/${{ github.event.inputs.solution_name }}
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        allow-empty-commit: true
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add '${{env.SOLUTION_TARGET_FOLDER}}/Solutions/${{ github.event.inputs.solution_name }}' --all
+          git commit -m "Export and commit: Test2"
+          git push origin feature/${{ github.event.inputs.solution_name }}
+
+      - name: Compare branches
+        run: git diff develop...feature/${{ github.event.inputs.solution_name }}
+
+      # - name: Create PR to develop
+      #   uses: peter-evans/create-pull-request@v7
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     branch: feature/${{ github.event.inputs.solution_name }}
+      #     base: develop
+      #     title: '*do not edit* Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
+      #     body: |
+      #       Description: ${{ github.event.inputs.solution_description }}
+      #       Type of import: ${{ github.event.inputs.type_of_import }}
+      #       Label: ${{ github.event.inputs.type_of_solution }}
+      #       Issue: fixes ${{ github.event.inputs.type_of_solution }}
+      #     draft: false
+
+      # Step to create a pull request using GitHub API
+      - name: Create Pull Request via GitHub API
+        run: |
+          curl -u "${{ secrets.GITHUB_TOKEN }}:x-oauth-basic" \
+          -X POST \
+          -H "Accept: application/vnd.github.v3+json" \
+          https://api.github.com/repos/${{ github.repository }}/pulls \
+          -d '{"title":"*do not edit* Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}", 
+          "head":"feature/${{ github.event.inputs.solution_name }}", 
+          "base":"develop", "body":"Description: ${{ github.event.inputs.solution_description }}\n\n
+          Type of import: ${{ github.event.inputs.type_of_import }}
+          \n\nLabel: ${{ github.event.inputs.type_of_solution }}", "maintainer_can_modify":true}'
