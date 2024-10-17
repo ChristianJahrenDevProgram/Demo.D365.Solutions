@@ -1,5 +1,4 @@
-name: 04. test Export From DEV
-
+name: 05. test 2 Export From DEV
 on:
   workflow_dispatch:
     inputs:
@@ -106,35 +105,13 @@ jobs:
       - name: Create new branch
         run: |
           git fetch origin
-          if git rev-parse --verify origin/feature/${{ github.event.inputs.solution_name }}; then
-            echo "Branch feature/${{ github.event.inputs.solution_name }} already exists. Deleting..."
-            git push origin --delete feature/${{ github.event.inputs.solution_name }}
-          fi
-          git checkout -b feature/${{ github.event.inputs.solution_name }}
-          git push origin feature/${{ github.event.inputs.solution_name }}
-
-      #- name: Copy solution files to target folder
-       # run: |
-        #  mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
-         # cp -r ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          git checkout -b feature/Test
+          git push origin feature/Test
 
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add 'PowerPlatform/Solutions/ALMDemo/TestFolder' --all
-          git commit -m "Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}"
-          git push origin feature/${{ github.event.inputs.solution_name }}
-
-      - name: Create PR to develop
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: feature/${{ github.event.inputs.solution_name }}
-          base: develop
-          title: '*do not edit* Exported and unpacked solution ${{ github.event.inputs.solution_name }}'
-          body: |
-            Description: ${{ github.event.inputs.solution_description }}
-            Label: ${{ github.event.inputs.type_of_solution }}
-            Issue: fixes ${{ github.event.inputs.type_of_solution }}
-          draft: false
+          git add 'PowerPlatform/Solutions/ALMDemo/Test' --all
+          git commit -m "Export and commit: Test"
+          git push origin feature/Test
