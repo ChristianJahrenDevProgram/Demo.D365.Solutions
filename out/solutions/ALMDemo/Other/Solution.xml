@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ImportExportXml version="9.2.24093.200" SolutionPackageVersion="9.2" languagecode="1033" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.24093.200" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.24093.00200">
   <SolutionManifest>
-    <UniqueName>ALMDemo6</UniqueName>
+    <UniqueName>ALMDemo</UniqueName>
     <LocalizedNames>
-      <LocalizedName description="ALMDemo6" languagecode="1033" />
+      <LocalizedName description="ALMDemo" languagecode="1033" />
     </LocalizedNames>
     <Descriptions />
-    <Version>1.0.0.1</Version>
-    <Managed>0</Managed>
+    <Version>1.0.0.0</Version>
+    <Managed>2</Managed>
     <Publisher>
       <UniqueName>demo</UniqueName>
       <LocalizedNames>
@@ -79,6 +79,7 @@
     </Publisher>
     <RootComponents>
       <RootComponent type="1" schemaName="account" behavior="2" />
+      <RootComponent type="1" schemaName="activitypointer" behavior="2" />
     </RootComponents>
     <MissingDependencies />
   </SolutionManifest>
