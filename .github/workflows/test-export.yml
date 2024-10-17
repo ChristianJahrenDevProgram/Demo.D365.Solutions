@@ -121,8 +121,8 @@ jobs:
           git commit -m "Export and commit: Test2"
           git push origin feature/${{ github.event.inputs.solution_name }}
 
-      - name: Show git status
-        run: git status
+      - name: Compare branches
+        run: git diff develop...feature/${{ github.event.inputs.solution_name }}
 
       - name: Create PR to develop
         uses: peter-evans/create-pull-request@v7
