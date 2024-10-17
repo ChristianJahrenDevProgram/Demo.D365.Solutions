@@ -45,9 +45,9 @@ jobs:
     
     env:
       RUNNER_DEBUG: 1
-      #SOLUTION_EXPORT_FOLDER: PowerPlatform/Export/
-      #SOLUTION_FOLDER: out/solutions/
-      SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
+      SOLUTION_EXPORT_FOLDER: out/export/
+      SOLUTION_FOLDER: out/solutions/
+      SOLUTION_TARGET_FOLDER: powerplatform/solutions/
       SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
       
     steps:
@@ -72,7 +72,7 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ github.event.inputs.solution_name }}
-          solution-output-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip"
+          solution-output-file: "${{ env.SOLUTION_EXPORT_FOLDER }}/${{ github.event.inputs.solution_name }}.zip"
           managed: false
           run-asynchronously: true
           overwrite: true
@@ -85,7 +85,7 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ALMDemo
-          solution-output-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}_managed.zip"
+          solution-output-file: "${{ env.SOLUTION_EXPORT_FOLDER }}/${{ github.event.inputs.solution_name }}_managed.zip"
           managed: true
           run-asynchronously: true
           overwrite: true
@@ -93,10 +93,18 @@ jobs:
       - name: Unpack solution
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
-          solution-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip"
-          solution-folder: ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          solution-file: "${{ env.SOLUTION_EXPORT_FOLDER }}/${{ github.event.inputs.solution_name }}.zip"
+          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
           solution-type: 'Both'
           overwrite-files: true
+
+      - name: Prepare for PR
+        uses: microsoft/powerplatform-actions/branch-solution@v1
+        with:
+          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          solution-target-folder: ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          allow-empty-commit: true
 
       - name: Create new branch
         run: |
@@ -117,7 +125,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          git add ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }} --all
           git commit -m "Exported and unpacked solution ${{ github.event.inputs.solution_name }} with import ${{ github.event.inputs.type_of_import }}"
           git push origin feature/${{ github.event.inputs.solution_name }}
 
