@@ -68,7 +68,7 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
 
-      - name: Export Solution - Unmanaged
+      - name: Export solution - unmanaged
         uses: microsoft/powerplatform-actions/export-solution@v1
         with:
           environment-url: ${{ vars.ENVIRONMENTURL }}
@@ -76,12 +76,11 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ github.event.inputs.solution_name }}
-          solution-output-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip"
+          solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}.zip
           managed: false
-          run-asynchronously: true
           overwrite: true
 
-      - name: Export Solution - Managed
+      - name: Export solution - managed
         uses: microsoft/powerplatform-actions/export-solution@v1
         with:
           environment-url: ${{ vars.ENVIRONMENTURL }}
@@ -89,18 +88,17 @@ jobs:
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
           solution-name: ${{ github.event.inputs.solution_name }}
-          solution-output-file: "${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}_managed.zip"
+          solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}_managed.zip
           managed: true
-          run-asynchronously: true
           overwrite: true
 
-      - name: Unpack Solution
+      - name: Unpack solution
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
-          solution-file: '${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip'
-          solution-folder: 'PowerPlatform/Solutions/ALMDemo'
-          solution-type: 'Both'
-          overwrite-files: true
+          solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ github.event.inputs.solution_name }}.zip
+          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          solution-type: 'Unmanaged'
+          overwrite-files: false
 
       - name: Create new branch
         run: |
@@ -112,18 +110,17 @@ jobs:
           git checkout -b feature/${{ github.event.inputs.solution_name }}
           git push origin feature/${{ github.event.inputs.solution_name }}
 
-      #- name: Copy solution files to target folder
-       # run: |
-        #  mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
-         # cp -r "${{ github.workspace }}/${{ env.SOLUTION_TARGET_FOLDER }}"/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ github.event.inputs.solution_name }}
+      - name: Copy solution files to target folder
+        run: |
+          mkdir -p ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          cp -r ${{ env.SOLUTION_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}/* ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
 
-      # git add ${{env.SOLUTION_TARGET_FOLDER}}/${{ github.event.inputs.solution_name }} --all
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add 'PowerPlatform/Solutions/ALMDemo' --all
-          git commit -m 'Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
+          git add ${{ env.SOLUTION_TARGET_FOLDER }}/${{ env.SOLUTION_TARGET_FOLDER_NAME }}
+          git commit -m "Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}"
           git push origin feature/${{ github.event.inputs.solution_name }}
 
       - name: Create PR to develop
