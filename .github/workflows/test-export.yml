@@ -130,6 +130,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: feature/${{ github.event.inputs.solution_name }}
           base: develop
+          add-paths: "${{env.SOLUTION_TARGET_FOLDER}}/Solutions/${{ github.event.inputs.solution_name }}"
+          commit-message: "Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}"
+          delete-branch: false
           title: '*do not edit* Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
           body: |
             Description: ${{ github.event.inputs.solution_description }}
