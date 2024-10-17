@@ -46,10 +46,10 @@ jobs:
     
     env:
       RUNNER_DEBUG: 1
-      #SOLUTION_EXPORTED_FOLDER: out/exported/
-      #SOLUTION_FOLDER: out/solutions/
+      SOLUTION_EXPORTED_FOLDER: out/exported/
+      SOLUTION_FOLDER: out/solutions/
       SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions
-      #SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
+      SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
 
     permissions:
       contents: write
