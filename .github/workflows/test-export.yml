@@ -105,13 +105,17 @@ jobs:
       - name: Create new branch
         run: |
           git fetch origin
-          git checkout -b feature/Test
-          git push origin feature/Test
+          if git rev-parse --verify origin/feature/${{ github.event.inputs.solution_name }}; then
+            echo "Branch feature/${{ github.event.inputs.solution_name }} already exists. Deleting..."
+            git push origin --delete feature/${{ github.event.inputs.solution_name }}
+          fi
+          git checkout -b feature/${{ github.event.inputs.solution_name }}
+          git push origin feature/${{ github.event.inputs.solution_name }}
 
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add 'PowerPlatform/Solutions/ALMDemo/TestFolder' --all
-          git commit -m "Export and commit: Test"
-          git push origin feature/Test
+          git commit -m "Export and commit: Test2"
+          git push origin feature/${{ github.event.inputs.solution_name }}
