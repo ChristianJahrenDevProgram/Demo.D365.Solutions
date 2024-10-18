@@ -11,7 +11,7 @@ on:
 
 env:
   RUNNER_DEBUG: 1
-  SOLUTION_EXPORT_FOLDER: out/export/
+  #SOLUTION_EXPORT_FOLDER: out/export/
   SOLUTION_FOLDER: out/solutions/
   SOLUTION_TARGET_FOLDER: solutions/
 
