@@ -1,3 +1,4 @@
+# testing
 name: 04. Build & Depoy
 
 on:
@@ -39,7 +40,7 @@ jobs:
         uses: microsoft/powerplatform-actions/pack-solution@v1
         with:
           solution-folder: ${{ github.workspace }}/${{ github.event.inputs.solution_name }}/SolutionPackage
-          solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_${{ env.timestamp }}_managed.zip
+          solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_managed.zip
           solution-type: 'Managed'
       
       - name: Import solution as unmanaged to build environment
@@ -49,7 +50,7 @@ jobs:
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
-          solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_${{ env.timestamp }}_managed.zip
+          solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_managed.zip
           force-overwrite: false # tar evigheter med true
           publish-changes: false
           run-asynchronously: false
