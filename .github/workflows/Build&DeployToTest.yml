@@ -36,11 +36,13 @@ jobs:
           IMPORT_TYPE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n' | awk '{print $(NF-1)}')
           echo "solution_name=$FEATURE_BRANCH" >> $GITHUB_ENV
           echo "import_type=$IMPORT_TYPE" >> $GITHUB_ENV
+          
+          echo "solution_name=$FEATURE_BRANCH" >> $GITHUB_OUTPUT
 
           if [ "${{ env.import_type }}" = "upgrade" ]; then
-            echo "is_upgrade=true" >> $GITHUB_ENV
+            echo "is_upgrade=true" >> $GITHUB_OUTPUT
           else
-            echo "is_upgrade=false" >> $GITHUB_ENV
+            echo "is_upgrade=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Pack Solution
@@ -101,3 +103,4 @@ jobs:
         activate-plugins: true
         run-asynchronously: false # endre til true etter testing
         stage-and-upgrade: ${{ env.is_upgrade }}
+
