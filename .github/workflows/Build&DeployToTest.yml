@@ -19,6 +19,10 @@ jobs:
   build-and-stage:
     runs-on: ubuntu-latest
 
+    outputs:
+      solution_name: ${{ steps.set-workflow-variables.outputs.solution_name }}
+      is_upgrade: ${{ steps.set-workflow-variables.outputs.is_upgrade }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -26,19 +30,13 @@ jobs:
         uses: microsoft/powerplatform-actions/actions-install@v1
       
       - name: Extract feature branch and import type from commit message
+        id: set-workflow-variables
         run: |
           FEATURE_BRANCH=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n' | awk '{print $NF}')
           IMPORT_TYPE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n' | awk '{print $(NF-1)}')
           echo "solution_name=$FEATURE_BRANCH" >> $GITHUB_ENV
           echo "import_type=$IMPORT_TYPE" >> $GITHUB_ENV
 
-      - name: Print solution name and import type
-        run: |
-          echo "The solution name is ${{ env.solution_name }}"
-          echo "The import type is ${{ env.import_type }}"
-
-      - name: Determine if upgrade (true) or update (false)
-        run: |
           if [ "${{ env.import_type }}" = "upgrade" ]; then
             echo "is_upgrade=true" >> $GITHUB_ENV
           else
@@ -76,6 +74,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       RUNNER_DEBUG: 1
+      SOLUTION_NAME: ${{ needs.build-and-stage.outputs.solution_name }}
+      IS_UPGRADE: ${{ needs.build-and-stage.outputs.is_upgrade }}
 
     steps:
     - uses: actions/checkout@v4
@@ -95,10 +95,9 @@ jobs:
         app-id: ${{ vars.TEST_CLIENT_ID }}
         client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
         tenant-id: ${{ vars.TENANTID }}
-        solution-file: '${{runner.temp}}/artifacts/${{ env.solution_name }}_managed.zip'
-        force-overwrite: ${{ env.is_upgrade }}
+        solution-file: '${{runner.temp}}/artifacts/${{ env.SOLUTION_NAME }}_managed.zip'
+        force-overwrite: ${{ env.IS_UPGRADE }}
         publish-changes: true
         activate-plugins: true
         run-asynchronously: false # endre til true etter testing
         stage-and-upgrade: ${{ env.is_upgrade }}
-
