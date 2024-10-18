@@ -45,10 +45,9 @@ jobs:
     
     env:
       RUNNER_DEBUG: 1
-      SOLUTION_EXPORT_FOLDER: out/export/
+      #SOLUTION_EXPORT_FOLDER: out/export/
       SOLUTION_FOLDER: out/solutions/
       SOLUTION_TARGET_FOLDER: solutions/
-      #SOLUTION_TARGET_FOLDER_NAME: ${{ github.event.inputs.solution_name }}
       
     steps:
       - uses: actions/checkout@v4
@@ -111,11 +110,13 @@ jobs:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
           allow-empty-commit: true
 
+      # Legg til sjekk for branch --diff, stopp om like og slett branch
+      # finn en måte å øke versjonsnummeret på
       - name: Create PR to develop
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'PR ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
+          commit-message: 'Pull request ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
           branch: 'feature/${{ github.event.inputs.solution_name }}-${{ env.timestamp }}'
           base: develop
           title: '*do not edit* Export and commit: ${{ github.event.inputs.type_of_import }} ${{ github.event.inputs.solution_name }}'
