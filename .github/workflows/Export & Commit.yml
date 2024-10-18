@@ -7,14 +7,6 @@ on:
         description: 'Solution to export'
         required: true
         default: 'ALMDemo'
-      type_of_import:
-        description: 'Upgrade or Update'
-        type: 'choice'
-        required: true
-        options: 
-        - 'upgrade'
-        - 'update'
-        default: 'update'
       branch:
         description: 'Branch to commit to'
         type: 'choice'
@@ -23,7 +15,7 @@ on:
         - 'main'
         - 'hotfix'
       solution_description:
-        description: 'Commit msg'
+        description: 'Commit message'
         required: true
         default: ''
       type_of_solution:
@@ -45,7 +37,6 @@ jobs:
     
     env:
       RUNNER_DEBUG: 1
-      #SOLUTION_FOLDER: out/solutions/
       SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
       
     steps:
@@ -61,10 +52,6 @@ jobs:
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
-
-      - name: Get current timestamp
-        id: timestamp
-        run: echo "timestamp=$(date -u +"%d%m%YT%H%M")" >> $GITHUB_ENV
 
       - name: Export Solution - Unmanaged
         uses: microsoft/powerplatform-actions/export-solution@v1
