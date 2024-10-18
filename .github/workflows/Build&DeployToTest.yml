@@ -11,14 +11,17 @@ on:
 
 env:
   RUNNER_DEBUG: 1
-  SOLUTION_EXPORTED_FOLDER: out/exported/
+  SOLUTION_EXPORT_FOLDER: out/export/
   SOLUTION_FOLDER: out/solutions/
   SOLUTION_TARGET_FOLDER: solutions/
-  SOLUTION_TARGET_FOLDER_NAME: ALMDemo
 
 jobs:
-  convert-to-managed:
+  build-and-stage:
     runs-on: ubuntu-latest
+
+    outputs:
+      solution_name: ${{ steps.set-workflow-variables.outputs.solution_name }}
+      is_upgrade: ${{ steps.set-workflow-variables.outputs.is_upgrade }}
 
     steps:
       - uses: actions/checkout@v4
@@ -26,58 +29,78 @@ jobs:
       - name: Install Power Platform Tools
         uses: microsoft/powerplatform-actions/actions-install@v1
       
-      - name: Extract feature branch from commit message
+      - name: Extract feature branch and import type from commit message
+        id: set-workflow-variables
         run: |
-          # Fjerne linjeskift og hente ut siste ordet fra commit-meldingen
           FEATURE_BRANCH=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n' | awk '{print $NF}')
+          IMPORT_TYPE=$(echo "${{ github.event.head_commit.message }}" | tr -d '\n' | awk '{print $(NF-1)}')
           echo "solution_name=$FEATURE_BRANCH" >> $GITHUB_ENV
+          echo "import_type=$IMPORT_TYPE" >> $GITHUB_ENV
+          
+          echo "solution_name=$FEATURE_BRANCH" >> $GITHUB_OUTPUT
 
-      - name: Print solution name
-        run: echo "The solution name is ${{ env.solution_name }}"
+          if [ "${{ env.import_type }}" = "upgrade" ]; then
+            echo "is_upgrade=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_upgrade=false" >> $GITHUB_OUTPUT
+          fi
 
+      - name: Pack Solution
+        uses: microsoft/powerplatform-actions/pack-solution@v1
+        with:
+          solution-folder: ${{ env.SOLUTION_FOLDER }}/${{ env.solution_name }}
+          solution-file: ${{runner.temp}}/packed/${{ env.solution_name }}_managed.zip
+          solution-type: 'Managed'
+      
       - name: Import solution as unmanaged to build environment
         uses: microsoft/powerplatform-actions/import-solution@v1
         with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
+          environment-url: ${{ vars.BUILD_ENVIRONMENT_URL }}
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
-          solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}.zip
-          force-overwrite: true
-          publish-changes: true
+          solution-file: ${{runner.temp}}/packed/${{ env.solution_name }}_managed.zip
+          force-overwrite: false # tar evigheter med true
+          publish-changes: false
+          run-asynchronously: false
 
-      - name: Export solution as managed
-        uses: microsoft/powerplatform-actions/export-solution@v1
-        with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
-          app-id: ${{ vars.CLIENTIDALMDEV }}
-          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
-          tenant-id: ${{ vars.TENANTID }}
-          solution-name: ${{ env.solution_name }}
-          managed: true
-          solution-output-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
-
-      - name: Publish artifact
+      - name: Publish Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: managedSolution
-          path: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
+          name: drop
+          path: '${{runner.temp}}/packed/**'
+          overwrite: true
 
-      - name: Fetch the ready to ship solution from GH artifact store
-        uses: actions/download-artifact@v4
-        with:
-          name: managedSolution
-          path: ${{ env.SOLUTION_EXPORTED_FOLDER }}/
+  release-to-test:
+    needs: [build-and-stage]
+    runs-on: ubuntu-latest
+    env:
+      RUNNER_DEBUG: 1
+      SOLUTION_NAME: ${{ needs.build-and-stage.outputs.solution_name }}
+      IS_UPGRADE: ${{ needs.build-and-stage.outputs.is_upgrade }}
 
-      - name: Import solution to prod env
-        uses: microsoft/powerplatform-actions/import-solution@v1
-        with:
-          environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
-          app-id: ${{ vars.TEST_CLIENT_ID }}
-          client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
-          tenant-id: ${{ vars.TENANTID }}
-          solution-file: ${{ env.SOLUTION_EXPORTED_FOLDER }}/${{ env.solution_name }}-managed.zip
-          force-overwrite: true
-          publish-changes: true
-          stage-and-upgrade: true
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Power Platform Tools
+      uses: microsoft/powerplatform-actions/actions-install@v1
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        path: '${{runner.temp}}/artifacts'
+        name: 'drop'
+
+    - name: Import solution to Test
+      uses: microsoft/powerplatform-actions/import-solution@v1
+      with:
+        environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
+        app-id: ${{ vars.TEST_CLIENT_ID }}
+        client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
+        tenant-id: ${{ vars.TENANTID }}
+        solution-file: '${{runner.temp}}/artifacts/${{ env.SOLUTION_NAME }}_managed.zip'
+        force-overwrite: ${{ env.IS_UPGRADE }}
+        publish-changes: true
+        activate-plugins: true
+        run-asynchronously: false # endre til true etter testing
+        stage-and-upgrade: ${{ env.is_upgrade }}
 
