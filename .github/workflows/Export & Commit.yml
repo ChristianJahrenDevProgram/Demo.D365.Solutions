@@ -1,0 +1,113 @@
+name: 03. Export & Commit 
+
+on:
+  workflow_dispatch:
+    inputs:
+      solution_name:
+        description: 'Solution to export'
+        required: true
+        default: 'ALMDemo'
+      type_of_import:
+        description: 'Upgrade or Update'
+        type: 'choice'
+        required: true
+        options: 
+        - 'upgrade'
+        - 'update'
+        default: 'update'
+      branch:
+        description: 'Branch to commit to'
+        type: 'choice'
+        required: true
+        options: 
+        - 'main'
+        - 'hotfix'
+      solution_description:
+        description: 'Commit msg'
+        required: false
+        default: ''
+      type_of_solution:
+        description: 'Label'
+        type: 'choice'
+        required: false
+        options: 
+        - 'accces-task'
+        - 'development-task'
+        - 'bug'
+      related_to_issue:
+        description: 'Related to issue'
+        required: false
+        default: '#'
+
+jobs:
+  export-and-create-pr:
+    runs-on: ubuntu-latest
+    
+    env:
+      RUNNER_DEBUG: 1
+      #SOLUTION_FOLDER: out/solutions/
+      SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
+      
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Power Platform Tools
+        uses: microsoft/powerplatform-actions/actions-install@v1
+
+      - name: Publish Solution
+        uses: microsoft/powerplatform-actions/publish-solution@v1
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+
+      - name: Get current timestamp
+        id: timestamp
+        run: echo "timestamp=$(date -u +"%d%m%YT%H%M")" >> $GITHUB_ENV
+
+      - name: Export Solution - Unmanaged
+        uses: microsoft/powerplatform-actions/export-solution@v1
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+          solution-name: ${{ github.event.inputs.solution_name }}
+          solution-output-file: ${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip
+          managed: false
+          run-asynchronously: true
+          overwrite: true
+
+      - name: Export Solution - Managed
+        uses: microsoft/powerplatform-actions/export-solution@v1
+        with:
+          environment-url: ${{ vars.ENVIRONMENTURL }}
+          app-id: ${{ vars.CLIENTIDALMDEV }}
+          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          tenant-id: ${{ vars.TENANTID }}
+          solution-name: ${{ github.event.inputs.solution_name }}
+          solution-output-file: ${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}_managed.zip
+          managed: true
+          run-asynchronously: true
+          overwrite: true
+
+      - name: Create solution folder
+        run: mkdir -p ${{ github.workspace }}/solutions/${{ github.event.inputs.solution_name }}/SolutionPackage
+
+      - name: Unpack solution
+        uses: microsoft/powerplatform-actions/unpack-solution@v1
+        with:
+          solution-file: ${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip
+          solution-folder: ${{ github.workspace }}/solutions/${{ github.event.inputs.solution_name }}/SolutionPackage
+          solution-type: 'Both'
+          overwrite-files: true
+
+      - name: Commit Changes to Repo
+        run: |
+          git config user.email "<>"
+          git config user.name "${{github.triggering_actor}}"
+          git add --all
+          git commit -m ${{ github.event.inputs.solution_description  }}
+          git pull origin main
+          git push origin main
