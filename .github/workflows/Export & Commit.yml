@@ -24,7 +24,7 @@ on:
         - 'hotfix'
       solution_description:
         description: 'Commit msg'
-        required: false
+        required: true
         default: ''
       type_of_solution:
         description: 'Label'
@@ -93,13 +93,13 @@ jobs:
           overwrite: true
 
       - name: Create solution folder
-        run: mkdir -p ${{ github.workspace }}/solutions/${{ github.event.inputs.solution_name }}/SolutionPackage
+        run: mkdir -p ${{ github.workspace }}/${{ github.event.inputs.solution_name }}/SolutionPackage
 
       - name: Unpack solution
         uses: microsoft/powerplatform-actions/unpack-solution@v1
         with:
           solution-file: ${{runner.temp}}/exported/${{ github.event.inputs.solution_name }}.zip
-          solution-folder: ${{ github.workspace }}/solutions/${{ github.event.inputs.solution_name }}/SolutionPackage
+          solution-folder: ${{ github.workspace }}/${{ github.event.inputs.solution_name }}/SolutionPackage
           solution-type: 'Both'
           overwrite-files: true
 
