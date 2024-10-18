@@ -1,4 +1,3 @@
-# testing
 name: 04. Build & Depoy
 
 on:
@@ -20,16 +19,11 @@ on:
 
 env:
   RUNNER_DEBUG: 1
-  SOLUTION_FOLDER: out/solutions/
   SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
 
 jobs:
   build-and-stage:
     runs-on: ubuntu-latest
-
-    # outputs:
-    #   solution_name: ${{ steps.set-workflow-variables.outputs.solution_name }}
-    #   is_upgrade: ${{ steps.set-workflow-variables.outputs.is_upgrade }}
 
     steps:
       - uses: actions/checkout@v4
@@ -40,23 +34,12 @@ jobs:
       - name: Get current timestamp
         id: timestamp
         run: echo "timestamp=$(date -u +"%d%m%YT%H%M")" >> $GITHUB_ENV
-      
-      # - name: Extract feature branch and import type from commit message
-      #   id: set-workflow-variables
-      #   run: |         
-      #     echo "solution_name=${{}}" >> $GITHUB_OUTPUT
-
-      #     if [ "${{ env.import_type }}" = "upgrade" ]; then
-      #       echo "is_upgrade=true" >> $GITHUB_OUTPUT
-      #     else
-      #       echo "is_upgrade=false" >> $GITHUB_OUTPUT
-      #     fi
 
       - name: Pack Solution
         uses: microsoft/powerplatform-actions/pack-solution@v1
         with:
           solution-folder: ${{ github.workspace }}/${{ github.event.inputs.solution_name }}/SolutionPackage
-          solution-file: ${{runner.temp}}/packed/${{ env.solution_name }}_${{ env.timestamp }}_managed.zip
+          solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_${{ env.timestamp }}_managed.zip
           solution-type: 'Managed'
       
       - name: Import solution as unmanaged to build environment
@@ -66,7 +49,7 @@ jobs:
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
-          solution-file: ${{runner.temp}}/packed/${{ env.solution_name }}_${{ env.timestamp }}_managed.zip
+          solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_${{ env.timestamp }}_managed.zip
           force-overwrite: false # tar evigheter med true
           publish-changes: false
           run-asynchronously: false
@@ -86,8 +69,6 @@ jobs:
      url: 'https://org693bed5b.crm4.dynamics.com/'
     env:
       RUNNER_DEBUG: 1
-      # SOLUTION_NAME: ${{ needs.build-and-stage.outputs.solution_name }}
-      # IS_UPGRADE: ${{ needs.build-and-stage.outputs.is_upgrade }}
 
     steps:
     - uses: actions/checkout@v4
@@ -118,7 +99,7 @@ jobs:
         app-id: ${{ vars.TEST_CLIENT_ID }}
         client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
         tenant-id: ${{ vars.TENANTID }}
-        solution-file: '${{runner.temp}}/artifacts/${{ env.SOLUTION_NAME }}_managed.zip'
+        solution-file: '${{runner.temp}}/artifacts/${{ github.event.inputs.solution_name }}_managed.zip'
         force-overwrite: ${{ env.IS_UPGRADE }}
         publish-changes: true
         activate-plugins: true
