@@ -74,9 +74,6 @@ jobs:
      name: test
      url: 'https://test-christian.crm4.dynamics.com/'
 
-    env:
-      RUNNER_DEBUG: 1
-
     steps:
     - uses: actions/checkout@v4
     - name: Install Power Platform Tools
@@ -113,8 +110,9 @@ jobs:
      name: prod
      url: 'https://org693bed5b.crm4.dynamics.com/'
 
-    env:
-      RUNNER_DEBUG: 1
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.inputs.solution_name }}
+      cancel-in-progress: true
 
     steps:
     - uses: actions/checkout@v4
