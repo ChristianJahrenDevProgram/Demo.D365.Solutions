@@ -114,6 +114,6 @@ jobs:
           git config user.email "<>"
           git config user.name "${{github.triggering_actor}}"
           git add --all
-          git commit -m ${{ github.event.inputs.solution_description  }} --allow-empty
+          git commit -m ${{ github.event.inputs.solution_description  }}
           git pull origin main
           git push origin main
