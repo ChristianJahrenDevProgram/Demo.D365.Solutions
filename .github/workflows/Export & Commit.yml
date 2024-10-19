@@ -1,4 +1,4 @@
-name: 03. Export & Commit 
+name: 01. Export & Commit 
 
 on:
   workflow_dispatch:
