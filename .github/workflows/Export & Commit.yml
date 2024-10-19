@@ -1,4 +1,4 @@
-name: 01. Export & Commit 
+name: 01. Export & Commit
 
 on:
   workflow_dispatch:
@@ -7,6 +7,14 @@ on:
         description: 'Solution to export'
         required: true
         default: 'ALMDemo'
+      type_of_import:
+        description: 'Upgrade or Update'
+        type: 'choice'
+        required: true
+        options: 
+        - 'upgrade'
+        - 'update'
+        default: 'update'
       branch:
         description: 'Branch to commit to'
         type: 'choice'
@@ -34,12 +42,23 @@ on:
 jobs:
   export-and-create-pr:
     runs-on: ubuntu-latest
-    
+
     env:
       RUNNER_DEBUG: 1
       SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
       
     steps:
+      - name: Store variables in artifact
+        run: |
+            printf '{ 
+              "solution_name": ${{ github.event.inputs.solution_name }},  
+              "type_of_import": ${{ github.event.inputs.type_of_import }}
+            }' >> context.json
+      - uses: actions/upload-artifact@v3
+        with:
+          name: context.json
+          path: ./
+
       - uses: actions/checkout@v4
 
       - name: Install Power Platform Tools
