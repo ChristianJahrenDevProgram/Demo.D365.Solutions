@@ -1,8 +1,8 @@
-name: 02. Build & Depooy
+name: 02. Build & Depoy
 
 on:
   workflow_run:
-    workflows: ['01. Export & Commit']
+    workflows: ['01. Export & Commit ']
     types: [completed]
 
 env:
@@ -71,8 +71,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      solution_name: ${{ needs.build-and-stage.outputs.solution_name }}
-      is_upgrade: ${{ needs.build-and-stage.outputs.is_upgrade }}
+      solution_name: ${{ needs.capture-params.outputs.solution_name }}
+      is_upgrade: ${{ needs.capture-params.outputs.is_upgrade }}
 
     steps:
       - uses: actions/checkout@v4
