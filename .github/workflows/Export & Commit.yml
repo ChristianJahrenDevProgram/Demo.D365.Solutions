@@ -18,14 +18,14 @@ on:
         description: 'Commit message'
         required: true
         default: ''
-      type_of_solution:
-        description: 'Label'
-        type: 'choice'
-        required: false
-        options: 
-        - 'accces-task'
-        - 'development-task'
-        - 'bug'
+      # type_of_solution:
+      #   description: 'Label'
+      #   type: 'choice'
+      #   required: false
+      #   options: 
+      #   - 'accces-task'
+      #   - 'development-task'
+      #   - 'bug'
       related_to_issue:
         description: 'Related to issue'
         required: false
@@ -99,6 +99,6 @@ jobs:
           git config user.email "<>"
           git config user.name "${{github.triggering_actor}}"
           git add --all
-          git commit -m ${{ github.event.inputs.solution_description  }}
+          git commit -m "${{ github.event.inputs.solution_description  }} Fixes ${{ github.event.inputs.related_to_issue }}"
           git pull origin main
           git push origin main
