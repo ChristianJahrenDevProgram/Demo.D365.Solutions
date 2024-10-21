@@ -34,11 +34,15 @@ on:
 jobs:
   export-and-create-pr:
     runs-on: ubuntu-latest
-    
+
+    environment:
+      name: dev
+      url: 'https://dev-christian.crm4.dynamics.com/'   
+
     env:
       RUNNER_DEBUG: 1
       SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
-      
+
     steps:
       - uses: actions/checkout@v4
 
@@ -48,7 +52,7 @@ jobs:
       - name: Publish Solution
         uses: microsoft/powerplatform-actions/publish-solution@v1
         with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
+          environment-url: ${{ vars.DEV_ENVIRONMENT_URL }}
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
