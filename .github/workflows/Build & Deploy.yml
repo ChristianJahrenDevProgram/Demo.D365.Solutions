@@ -22,8 +22,12 @@ env:
   SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
 
 jobs:
-  build-and-stage:
+  build-and-release-to-test:
     runs-on: ubuntu-latest
+
+    environment:
+     name: test
+     url: 'https://test-christian.crm4.dynamics.com/'
 
     steps:
       - uses: actions/checkout@v4
@@ -37,9 +41,6 @@ jobs:
 
       # lag en løsning for versjonering
 
-      - name: Set upgrade flag
-        run: echo "is_upgrade=$([[ '${{ github.event.inputs.type_of_import }}' == 'upgrade' ]] && echo true || echo false)" >> $GITHUB_ENV
-        
       - name: Pack Solution
         uses: microsoft/powerplatform-actions/pack-solution@v1
         with:
@@ -47,18 +48,35 @@ jobs:
           solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_managed.zip
           solution-type: 'Managed'
       
-      - name: Import solution as unmanaged to build environment
+      # - name: Import solution as unmanaged to build environment
+      #   uses: microsoft/powerplatform-actions/import-solution@v1
+      #   with:
+      #     environment-url: ${{ vars.BUILD_ENVIRONMENT_URL }}
+      #     app-id: ${{ vars.CLIENTIDALMDEV }}
+      #     client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+      #     tenant-id: ${{ vars.TENANTID }}
+      #     solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_managed.zip
+      #     force-overwrite: ${{ env.IS_UPGRADE }}
+      #     publish-changes: false
+      #     run-asynchronously: false
+      #     activate-plugins: false
+      #     stage-and-upgrade: ${{ env.is_upgrade }}
+
+      - name: Set upgrade flag
+        run: echo "is_upgrade=$([[ '${{ github.event.inputs.type_of_import }}' == 'upgrade' ]] && echo true || echo false)" >> $GITHUB_ENV
+
+      - name: Import solution to Test
         uses: microsoft/powerplatform-actions/import-solution@v1
         with:
-          environment-url: ${{ vars.BUILD_ENVIRONMENT_URL }}
-          app-id: ${{ vars.CLIENTIDALMDEV }}
-          client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
+          environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
+          app-id: ${{ vars.TEST_CLIENT_ID }}
+          client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
           tenant-id: ${{ vars.TENANTID }}
-          solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_managed.zip
-          force-overwrite: ${{ env.IS_UPGRADE }}
-          publish-changes: false
-          run-asynchronously: false
-          activate-plugins: false
+          solution-file: '${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_managed.zip'
+          force-overwrite: ${{ env.is_upgrade }}
+          publish-changes: true
+          activate-plugins: true
+          run-asynchronously: true 
           stage-and-upgrade: ${{ env.is_upgrade }}
 
       - name: Publish Artifacts
@@ -68,44 +86,9 @@ jobs:
           path: '${{runner.temp}}/packed/**'
           overwrite: true
 
-  release-to-test:
-    needs: [build-and-stage]
-    runs-on: ubuntu-latest
-
-    environment:
-     name: test
-     url: 'https://test-christian.crm4.dynamics.com/'
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install Power Platform Tools
-      uses: microsoft/powerplatform-actions/actions-install@v1
-
-    - name: Download Artifact
-      uses: actions/download-artifact@v4
-      with:
-        path: '${{runner.temp}}/artifacts'
-        name: 'drop'
-
-    - name: Set upgrade flag
-      run: echo "is_upgrade=$([[ '${{ github.event.inputs.type_of_import }}' == 'upgrade' ]] && echo true || echo false)" >> $GITHUB_ENV
-
-    - name: Import solution to Test
-      uses: microsoft/powerplatform-actions/import-solution@v1
-      with:
-        environment-url: ${{ vars.TEST_ENVIRONMENT_URL }}
-        app-id: ${{ vars.TEST_CLIENT_ID }}
-        client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
-        tenant-id: ${{ vars.TENANTID }}
-        solution-file: '${{runner.temp}}/artifacts/${{ github.event.inputs.solution_name }}_managed.zip'
-        force-overwrite: ${{ env.IS_UPGRADE }}
-        publish-changes: true
-        activate-plugins: true
-        run-asynchronously: true 
-        stage-and-upgrade: ${{ env.is_upgrade }}
-
+ 
   release-to-prod:
-    needs: [release-to-test]
+    needs: [build-and-release-to-test]
     runs-on: ubuntu-latest
 
     environment:
