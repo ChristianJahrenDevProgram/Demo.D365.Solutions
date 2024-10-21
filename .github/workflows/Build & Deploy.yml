@@ -35,6 +35,8 @@ jobs:
         id: timestamp
         run: echo "timestamp=$(date -u +"%d%m%YT%H%M")" >> $GITHUB_ENV
 
+      # lag en løsning for versjonering
+
       - name: Set upgrade flag
         run: echo "is_upgrade=$([[ '${{ github.event.inputs.type_of_import }}' == 'upgrade' ]] && echo true || echo false)" >> $GITHUB_ENV
         
@@ -99,7 +101,7 @@ jobs:
         force-overwrite: ${{ env.IS_UPGRADE }}
         publish-changes: true
         activate-plugins: true
-        run-asynchronously: true # endre til true etter testing
+        run-asynchronously: true 
         stage-and-upgrade: ${{ env.is_upgrade }}
 
   release-to-prod:
@@ -109,10 +111,6 @@ jobs:
     environment:
      name: prod
      url: 'https://org693bed5b.crm4.dynamics.com/'
-
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event.inputs.solution_name }}
-      cancel-in-progress: true
 
     steps:
     - uses: actions/checkout@v4
@@ -140,5 +138,5 @@ jobs:
         force-overwrite: ${{ env.IS_UPGRADE }}
         publish-changes: true
         activate-plugins: true
-        run-asynchronously: true # endre til true etter testing
+        run-asynchronously: true
         stage-and-upgrade: ${{ env.is_upgrade }}
