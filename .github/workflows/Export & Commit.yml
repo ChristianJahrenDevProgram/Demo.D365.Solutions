@@ -7,6 +7,14 @@ on:
         description: 'Solution to export'
         required: true
         default: 'ALMDemo'
+      solution_description:
+        description: 'Commit message'
+        required: true
+        default: ''
+      related_to_issue:
+        description: 'Related to issue (e.g. #1, #2, #3)'
+        required: false
+        default: ''
       branch:
         description: 'Branch to commit to'
         type: 'choice'
@@ -14,22 +22,6 @@ on:
         options: 
         - 'main'
         - 'hotfix'
-      solution_description:
-        description: 'Commit message'
-        required: true
-        default: ''
-      # type_of_solution:
-      #   description: 'Label'
-      #   type: 'choice'
-      #   required: false
-      #   options: 
-      #   - 'accces-task'
-      #   - 'development-task'
-      #   - 'bug'
-      related_to_issue:
-        description: 'Related to issue'
-        required: false
-        default: '#'
 
 jobs:
   export-and-create-pr:
@@ -46,6 +38,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Process issues input
+        run: |
+          if [ -n "${{ github.event.inputs.related_to_issue }}" ]; then
+          issues="($(echo "${input}" | sed 's/ *, */, /g' | sed 's/#/fix #/g'))"
+          else
+            issues=""
+          fi
+
       - name: Install Power Platform Tools
         uses: microsoft/powerplatform-actions/actions-install@v1
 
@@ -60,7 +60,7 @@ jobs:
       - name: Export Solution - Unmanaged
         uses: microsoft/powerplatform-actions/export-solution@v1
         with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
+          environment-url: ${{ vars.DEV_ENVIRONMENT_URL }}
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
@@ -73,7 +73,7 @@ jobs:
       - name: Export Solution - Managed
         uses: microsoft/powerplatform-actions/export-solution@v1
         with:
-          environment-url: ${{ vars.ENVIRONMENTURL }}
+          environment-url: ${{ vars.DEV_ENVIRONMENT_URL }}
           app-id: ${{ vars.CLIENTIDALMDEV }}
           client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
           tenant-id: ${{ vars.TENANTID }}
@@ -99,6 +99,6 @@ jobs:
           git config user.email "<>"
           git config user.name "${{github.triggering_actor}}"
           git add --all
-          git commit -m "${{ github.event.inputs.solution_description  }} Fixes ${{ github.event.inputs.related_to_issue }}"
+          git commit -m "${{ github.event.inputs.solution_description }} ${issues}"
           git pull origin main
           git push origin main
