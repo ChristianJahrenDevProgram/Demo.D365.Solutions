@@ -41,7 +41,7 @@ jobs:
       - name: Process issues input
         run: |
           if [ -n "${{ github.event.inputs.related_to_issue }}" ]; then
-            issues="($(echo ""${{ github.event.inputs.related_to_issue }}" | sed 's/ *, */, /g' | sed 's/#/fix #/g'))"
+            issues="($(echo "${{ github.event.inputs.related_to_issue }}" | sed 's/ *, */, /g' | sed 's/#/fix #/g'))"
           else
             issues=""
           fi
