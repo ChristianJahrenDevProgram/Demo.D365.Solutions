@@ -41,12 +41,12 @@ jobs:
       - name: Process issues input
         run: |
           if [ -n "${{ github.event.inputs.related_to_issue }}" ]; then
-            issues_input="($(echo "${{ github.event.inputs.related_to_issue }}" | sed 's/ *, */, /g' | sed 's/#/fix #/g'))"
+            issues_input="($(echo "${{ github.event.inputs.related_to_issue }}" | sed 's/ *, */, /g'))"
             echo "issues=$issues_input" >> $GITHUB_ENV 
           else
             echo 'issues=""' >> $GITHUB_ENV
           fi
-          echo "Processed issues: $issues"
+          echo "Processed issues: ${{ issues }}"
 
       - name: Install Power Platform Tools
         uses: microsoft/powerplatform-actions/actions-install@v1
