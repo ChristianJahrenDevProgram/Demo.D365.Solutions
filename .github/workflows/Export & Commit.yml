@@ -46,7 +46,7 @@ jobs:
           else
             echo 'issues=""' >> $GITHUB_ENV
           fi
-          echo "Processed issues: ${{ issues }}"
+          echo "Processed issues: ${{ env.issues }}"
 
       - name: Install Power Platform Tools
         uses: microsoft/powerplatform-actions/actions-install@v1
