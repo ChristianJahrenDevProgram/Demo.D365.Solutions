@@ -1,6 +1,8 @@
-name: 02. Build & Deploy
+name: build & deploy
 
 on:
+  repository_dispatch:
+    types: [call-deploy-workflow]
   workflow_dispatch:
     inputs:
       solution_name:
@@ -32,6 +34,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Determine trigger
+        run: |
+          if [ -n "${{ github.event.client_payload.solution_name }}" ]; then
+            echo "solution_name=${{ github.event.client_payload.solution_name }}" >> $GITHUB_ENV
+            echo "type_of_import=${{ github.event.client_payload.type_of_import }}" >> $GITHUB_ENV
+          else
+            echo "solution_name=${{ github.event.inputs.solution_name }}" >> $GITHUB_ENV
+            echo "solution_name=${{ github.event.inputs.type_of_import }}" >> $GITHUB_ENV
+          fi
+
+      - name: Display Solution Name
+        run: echo "${{env.solution_name}}, ${{env.type_of_import}}"
+
       - name: Install Power Platform Tools
         uses: microsoft/powerplatform-actions/actions-install@v1
 
@@ -44,26 +59,12 @@ jobs:
       - name: Pack Solution
         uses: microsoft/powerplatform-actions/pack-solution@v1
         with:
-          solution-folder: ${{ github.workspace }}/${{ github.event.inputs.solution_name }}/SolutionPackage
-          solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_managed.zip
+          solution-folder: ${{ github.workspace }}/${{env.solution_name}}/SolutionPackage
+          solution-file: ${{runner.temp}}/packed/${{env.solution_name}}_managed.zip
           solution-type: 'Managed'
-      
-      # - name: Import solution as unmanaged to build environment
-      #   uses: microsoft/powerplatform-actions/import-solution@v1
-      #   with:
-      #     environment-url: ${{ vars.BUILD_ENVIRONMENT_URL }}
-      #     app-id: ${{ vars.CLIENTIDALMDEV }}
-      #     client-secret: ${{ secrets.CLIENTSECRETALMDEV }}
-      #     tenant-id: ${{ vars.TENANTID }}
-      #     solution-file: ${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_managed.zip
-      #     force-overwrite: ${{ env.IS_UPGRADE }}
-      #     publish-changes: false
-      #     run-asynchronously: false
-      #     activate-plugins: false
-      #     stage-and-upgrade: ${{ env.is_upgrade }}
 
       - name: Set upgrade flag
-        run: echo "is_upgrade=$([[ '${{ github.event.inputs.type_of_import }}' == 'upgrade' ]] && echo true || echo false)" >> $GITHUB_ENV
+        run: echo "is_upgrade=$([[ '${{env.type_of_import}}' == 'upgrade' ]] && echo true || echo false)" >> $GITHUB_ENV
 
       - name: Import solution to Test
         uses: microsoft/powerplatform-actions/import-solution@v1
@@ -72,7 +73,7 @@ jobs:
           app-id: ${{ vars.TEST_CLIENT_ID }}
           client-secret: ${{ secrets.TEST_CLIENT_SECRET }}
           tenant-id: ${{ vars.TENANTID }}
-          solution-file: '${{runner.temp}}/packed/${{ github.event.inputs.solution_name }}_managed.zip'
+          solution-file: '${{runner.temp}}/packed/${{env.solution_name}}_managed.zip'
           force-overwrite: ${{ env.is_upgrade }}
           publish-changes: true
           activate-plugins: true
@@ -108,17 +109,17 @@ jobs:
         name: 'drop'
 
     - name: Set upgrade flag
-      run: echo "is_upgrade=$([[ '${{ github.event.inputs.type_of_import }}' == 'upgrade' ]] && echo true || echo false)" >> $GITHUB_ENV
+      run: echo "is_upgrade=$([[ '${{env.type_of_import}}' == 'upgrade' ]] && echo true || echo false)" >> $GITHUB_ENV
 
-    - name: Import solution to Test
+    - name: Import solution to Production
       uses: microsoft/powerplatform-actions/import-solution@v1
       with:
         environment-url: ${{ vars.PROD_ENVIRONMENT_URL }}
         app-id: ${{ vars.PROD_CLIENT_ID }}
         client-secret: ${{ secrets.PROD_CLIENT_SECRET }}
         tenant-id: ${{ vars.TENANTID }}
-        solution-file: '${{runner.temp}}/artifacts/${{ github.event.inputs.solution_name }}_managed.zip'
-        force-overwrite: ${{ env.IS_UPGRADE }}
+        solution-file: '${{runner.temp}}/artifacts/${{env.solution_name}}_managed.zip'
+        force-overwrite: ${{ env.is_upgrade }}
         publish-changes: true
         activate-plugins: true
         run-asynchronously: true
