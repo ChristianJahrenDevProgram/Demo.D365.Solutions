@@ -28,8 +28,8 @@ jobs:
     runs-on: ubuntu-latest
 
     outputs:
-      solution_name: ${{ steps.et-output-variables.outputs.solution_name }}
-      is_upgrade: ${{ steps.et-output-variables.outputs.is_upgrade }}
+      solution_name: ${{ steps.set-output-variables.outputs.solution_name }}
+      is_upgrade: ${{ steps.set-output-variables.outputs.is_upgrade }}
 
     environment:
      name: test
