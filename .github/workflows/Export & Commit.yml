@@ -1,4 +1,4 @@
-name: 01. Export & Commit
+name: export & commit
 
 on:
   workflow_dispatch:
@@ -12,9 +12,17 @@ on:
         required: true
         default: ''
       related_to_issue:
-        description: 'Related to issue (e.g. #1, #2, #3)'
+        description: 'Related to issue e.g. #1, #2, #3'
         required: false
         default: ''
+      type_of_import:
+        description: 'Upgrade or Update'
+        type: 'choice'
+        required: true
+        options: 
+        - 'upgrade'
+        - 'update'
+        default: 'update'
       branch:
         description: 'Branch to commit to'
         type: 'choice'
@@ -22,6 +30,7 @@ on:
         options: 
         - 'main'
         - 'hotfix'
+        
 
 jobs:
   export-and-create-pr:
@@ -38,6 +47,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: call-deploy-workflow
+          client-payload: '{"solution_name": "${{ github.event.inputs.solution_name }}", "type_of_import": "${{ github.event.inputs.type_of_import }}"}'
+
       - name: Process issues input
         run: |
           if [ -n "${{ github.event.inputs.related_to_issue }}" ]; then
@@ -46,7 +61,6 @@ jobs:
           else
             echo 'issues=""' >> $GITHUB_ENV
           fi
-          echo "Processed issues: ${{ env.issues }}"
 
       - name: Install Power Platform Tools
         uses: microsoft/powerplatform-actions/actions-install@v1
@@ -102,5 +116,10 @@ jobs:
           git config user.name "${{github.triggering_actor}}"
           git add --all
           git commit -m "${{ github.event.inputs.solution_description }} ${{ env.issues }}"
-          git pull origin main
           git push origin main
+
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          event-type: build-and-deploy-event
+          client-payload: '{"solution_name": "${{ github.event.inputs.solution_name }}", "type_of_import": "${{ github.event.inputs.type_of_import }}"}'
