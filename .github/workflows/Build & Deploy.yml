@@ -2,7 +2,7 @@ name: build & deploy
 
 on:
   repository_dispatch:
-    types: [call-deploy-workflow]
+    types: [build-and-deploy-event]
   workflow_dispatch:
     inputs:
       solution_name:
