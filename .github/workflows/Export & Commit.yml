@@ -47,12 +47,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          event-type: call-deploy-workflow
-          client-payload: '{"solution_name": "${{ github.event.inputs.solution_name }}", "type_of_import": "${{ github.event.inputs.type_of_import }}"}'
-
       - name: Process issues input
         run: |
           if [ -n "${{ github.event.inputs.related_to_issue }}" ]; then
