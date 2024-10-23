@@ -1,0 +1,48 @@
+name: 04. Build & Deploy
+
+on:
+  repository_dispatch:
+    types: [call-deploy-workflow]
+  workflow_dispatch:
+    inputs:
+      solution_name:
+        description: 'Solution to export'
+        required: true
+        default: 'ALMDemo'
+      type_of_import:
+        description: 'Upgrade or Update'
+        type: 'choice'
+        required: true
+        options: 
+        - 'upgrade'
+        - 'update'
+        default: 'update'
+
+
+env:
+  RUNNER_DEBUG: 1
+  SOLUTION_TARGET_FOLDER: PowerPlatform/Solutions/
+
+jobs:
+  build-and-release-to-test:
+    runs-on: ubuntu-latest
+
+    environment:
+     name: test
+     url: 'https://test-christian.crm4.dynamics.com/'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine trigger
+        run: |
+          if [ -n "${{ github.event.client_payload.solution_name }}" ]; then
+            echo "solution_name=${{ github.event.client_payload.solution_name }}" >> $GITHUB_ENV
+            echo "type_of_import=${{ github.event.client_payload.type_of_import }}" >> $GITHUB_ENV
+          else
+            echo "solution_name=${{ github.event.inputs.solution_name }}" >> $GITHUB_ENV
+            echo "solution_name=${{ github.event.inputs.type_of_import }}" >> $GITHUB_ENV
+          fi
+
+      - name: Display Solution Name
+        run: echo "${{env.solution_name}}, ${{env.type_of_import}}"
