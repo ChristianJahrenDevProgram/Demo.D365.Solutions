@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ImportExportXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.24094.212" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.24094.00212">
+<ImportExportXml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.24095.200" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.24095.00200">
   <Entities />
   <Roles />
   <Workflows />
@@ -11,6 +11,16 @@
   <optionsets />
   <CustomControls />
   <EntityDataProviders />
+  <connectionreferences>
+    <connectionreference connectionreferencelogicalname="demo_sharedcommondataserviceforapps_ccde3">
+      <connectionreferencedisplayname>Microsoft Dataverse ALMDemo-ccde3</connectionreferencedisplayname>
+      <connectorid>/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps</connectorid>
+      <iscustomizable>1</iscustomizable>
+      <promptingbehavior>0</promptingbehavior>
+      <statecode>0</statecode>
+      <statuscode>1</statuscode>
+    </connectionreference>
+  </connectionreferences>
   <Languages>
     <Language>1033</Language>
   </Languages>
